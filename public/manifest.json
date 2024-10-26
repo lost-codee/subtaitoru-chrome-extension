@@ -21,9 +21,18 @@
     }
   ],
 
-  "background": {
-    "service_worker": "js/background.js"
-  },
+  "web_accessible_resources": [
+    {
+      "resources": ["manage-learnings.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
 
-  "permissions": ["storage", "activeTab"]
+  "permissions": ["storage", "activeTab", "scripting", "webRequest"],
+
+  "host_permissions": [
+    "*://*.amazon.co.jp/*",
+    "*://*.youtube.com/*",
+    "*://*.netflix.com/*"
+  ]
 }

@@ -1,41 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+
+// style
 import "./index.css";
+
+// utils
 import { parseVTT } from "./utils/parse-subtitle";
+import { cn } from "./utils/cn";
+import { SHOW_QUIZ_POPUP } from "./constants/message";
 
 const Popup = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [fontSize, setFontSize] = useState("16");
-  const [subtitleColor, setSubtitleColor] = useState("#000000");
-  const [enableSubtitles, setEnableSubtitles] = useState(false);
-  const [isSubtitleLoaded, setIsSubtitleLoaded] = useState(false);
-
-  useEffect(() => {
-    chrome.storage.local.get(
-      ["fontSize", "fontColor", "enableSubtitles", "subtitleFile"],
-      (result) => {
-        if (result.fontSize) {
-          setFontSize(result.fontSize);
-        }
-        if (result.fontColor) {
-          setSubtitleColor(result.fontColor);
-        }
-        if (result.enableSubtitles) {
-          setEnableSubtitles(result.enableSubtitles);
-        }
-        if (result.subtitleFile) {
-          setIsSubtitleLoaded(true);
-        }
-      }
-    );
-  }, []);
+  const [showSubtitles, setShowSubtitles] = useState(false);
+  const [color, setColor] = useState("#383838");
+  const [fontSize, setFontSize] = useState("32px");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFile(event.target.files[0]);
-      const file1 = event.target.files[0];
+      setSelectedFile(event.target.files[0]);
+      setFileName(event.target.files[0].name);
+      const file = event.target.files[0];
 
-      if (file1) {
+      if (file) {
         const reader = new FileReader();
 
         reader.onload = function (e) {
@@ -46,14 +34,19 @@ const Popup = () => {
           }
 
           chrome.storage.local.set(
-            { subtitleFile: parseVTT(subtitleContent.toString()) },
+            {
+              subtitle: {
+                fileName: file.name,
+                content: parseVTT(subtitleContent.toString()),
+              },
+            },
             function () {
-              console.log("Value is set to " + subtitleContent);
+              console.log("Content uploaded: ", subtitleContent);
             }
           );
         };
 
-        reader.readAsText(file1);
+        reader.readAsText(file);
       }
     }
   };
@@ -67,141 +60,230 @@ const Popup = () => {
     });
   };
 
-  const handleSubtitleColorChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSubtitleColor(event.target.value);
+  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setColor(event.target.value);
     chrome.storage.local.set({
       fontColor: event.target.value,
     });
   };
 
-  const handleEnableSubtitlesChange = () => {
-    setEnableSubtitles(!enableSubtitles);
-    console.log({ popup: !enableSubtitles });
+  const handleShowSubtitlesChange = (showSubtitles: boolean) => {
+    setShowSubtitles(showSubtitles);
     chrome.storage.local.set({
-      enableSubtitles: !enableSubtitles,
+      showSubtitles,
     });
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleQuizClick = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+
+      // Inject the content script into the active tab if not already injected
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: activeTab.id as number },
+          files: ["js/vendor.js", "js/content_script.js"],
+        },
+        () => {
+          // Once injected, send a message to the content script to open the quiz modal
+          chrome.tabs.sendMessage(activeTab.id as number, {
+            action: SHOW_QUIZ_POPUP,
+          });
+        }
+      );
+    });
+  };
+
+  const handleManageLearnings = () => {
+    chrome.tabs.create({ url: "manage-learnings.html" });
+  };
+
+  useEffect(() => {
+    chrome.storage.local.get(
+      ["fontSize", "fontColor", "showSubtitles", "subtitle"],
+      (result) => {
+        if (result.fontSize) {
+          setFontSize(result.fontSize);
+        }
+        if (result.fontColor) {
+          setColor(result.fontColor);
+        }
+        if (result.showSubtitles) {
+          setShowSubtitles(result.showSubtitles);
+        }
+        if (result.subtitle) {
+          setFileName(result.subtitle.fileName);
+        }
+      }
+    );
+  }, []);
+
   return (
-    <div className="w-[350px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg shadow-md p-6">
-      <div className="pb-4">
-        <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <img src="mascot.png" alt="logo" className="h-8 w-8" />
-            Subtaitoru
-          </span>
-          <span className="text-xs font-normal bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-            Beta
-          </span>
+    <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
+      <header className="flex items-center mb-6">
+        <div
+          className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-2"
+          aria-hidden="true"
+        >
+          <span className="text-white font-bold text-lg">S</span>
         </div>
-      </div>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label
-            htmlFor="file-upload"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Upload Subtitle File
+        <h1 className="text-xl font-bold">Subtaitoru</h1>
+      </header>
+
+      <main>
+        {/* <div className="mb-6">
+          <label htmlFor="file-upload" className="flex space-x-2 mb-2 ">
+            <span>Upload file</span>
+            {fileName ? <strong>{fileName}</strong> : ""}
           </label>
-          <div className="relative">
-            <input
-              id="file-upload"
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+          <input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            accept=".vtt,.srt"
+            onChange={handleFileChange}
+            className="hidden"
+            aria-label="Upload subtitle file"
+          />
+          <button
+            onClick={handleUploadClick}
+            className={cn(
+              "w-full focus:ring-2 focus:ring-offset-2  text-white font-semibold py-2 px-4 rounded transition duration-300 ease-in-out",
+              fileName
+                ? "bg-[#1F2937] hover:bg-[#2d3a4d]"
+                : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+            )}
+          >
+            {fileName ? "Choose a file" : "Upload a new file"}
+          </button>
+        </div> */}
+        <section aria-labelledby="quiz-title" className="mb-6">
+          <h2
+            id="quiz-title"
+            className="text-2xl font-bold leading-tight text-gray-900"
+          >
+            Take a Quiz
+          </h2>
+
+          <div className="mt-3 text-sm text-gray-600">
+            <p>Improve your Japanese learning by taking a short quiz.</p>
+          </div>
+
+          <div className="mt-5 flex flex-col space-y-4">
             <button
-              onClick={() => document.getElementById("file-upload")?.click()}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+              onClick={handleQuizClick}
+              className="w-full focus:ring-2 focus:ring-offset-2  text-white font-semibold py-2 px-4 rounded transition duration-300 ease-in-out bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
             >
-              Choose File
+              Take Quiz
+            </button>
+            <button
+              onClick={handleManageLearnings}
+              className={cn(
+                "w-full focus:ring-2 focus:ring-offset-2  text-white font-semibold py-2 px-4 rounded transition duration-300 ease-in-out",
+                "bg-[#1F2937] hover:bg-[#2d3a4d]"
+              )}
+            >
+              Manage words
             </button>
           </div>
-          {file && (
-            <p className="text-sm text-gray-600">File uploaded: {file.name}</p>
-          )}
-          {isSubtitleLoaded && (
-            <p className="text-sm text-gray-600">Subtitle loaded</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="font-size"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Font Size
-          </label>
-          <select
-            id="font-size"
-            value={fontSize}
-            onChange={handleFontSizeChange}
-            className="w-full bg-white border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {[12, 16, 20, 24, 36, 48].map((size) => (
-              <option key={size} value={size.toString()}>
-                {size}px
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="subtitle-color"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Subtitle Color
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              id="subtitle-color"
-              type="color"
-              value={subtitleColor}
-              onChange={handleSubtitleColorChange}
-              className="w-12 h-8 p-1 bg-white border border-gray-300 rounded"
-            />
-            <input
-              type="text"
-              value={subtitleColor}
-              onChange={(e) => setSubtitleColor(e.target.value)}
-              className="flex-grow bg-white border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        </section>
+
+        <section className="mb-6" aria-labelledby="settings-heading">
+          <h2 id="settings-heading" className="text-lg font-semibold mb-2">
+            Settings
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="font-size"
+                className="block text-sm font-medium mb-1"
+              >
+                Font-size
+              </label>
+              <select
+                id="font-size"
+                value={fontSize}
+                onChange={handleFontSizeChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="16px">16px</option>
+                <option value="24px">24px</option>
+                <option value="32px">32px</option>
+                <option value="40px">40px</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="color" className="block text-sm font-medium mb-1">
+                Color
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  id="subtitle-color"
+                  type="color"
+                  value={color}
+                  onChange={handleColorChange}
+                  className="w-12 h-8 p-1 bg-white border border-gray-300 rounded"
+                />
+                <input
+                  type="text"
+                  value={color}
+                  onChange={handleColorChange}
+                  className="flex-grow bg-white border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between space-y-4 ">
+              <label
+                className="text-sm font-medium mb-1"
+                id="show-subtitles-label"
+              >
+                Enable subtitles
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showSubtitles}
+                aria-labelledby="show-subtitles-label"
+                onClick={() => handleShowSubtitlesChange(!showSubtitles)}
+                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                  showSubtitles ? "bg-indigo-600" : "bg-gray-200"
+                }`}
+              >
+                <span className="sr-only">
+                  {showSubtitles ? "Turn off subtitles" : "Turn on subtitles"}
+                </span>
+                <span
+                  className={`${
+                    showSubtitles ? "translate-x-6" : "translate-x-1"
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="enable-subtitles"
-            className="text-sm font-medium text-gray-700"
-          >
-            Enable Subtitles
-          </label>
-          <button
-            role="switch"
-            aria-checked={enableSubtitles}
-            onClick={handleEnableSubtitlesChange}
-            className={`${
-              enableSubtitles ? "bg-blue-600" : "bg-gray-200"
-            } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-          >
-            <span className="sr-only">Enable subtitles</span>
-            <span
-              aria-hidden="true"
-              className={`${
-                enableSubtitles ? "translate-x-5" : "translate-x-0"
-              } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-            />
-          </button>
-        </div>
-      </div>
-      <div className="flex justify-between text-sm text-gray-600 mt-6">
-        <a href="#" className="hover:text-blue-600 transition-colors">
+        </section>
+      </main>
+
+      <footer className="flex justify-between text-sm text-gray-600">
+        <a
+          href="https://subtaitoru-web.vercel.app/"
+          target="_blank"
+          className="hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+        >
+          How to use?
+        </a>
+        <a
+          target="_blank"
+          href="https://subtaitoru-web.vercel.app/privacy-policy"
+          className="hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+        >
           Privacy Policy
         </a>
-        <a href="#" className="hover:text-blue-600 transition-colors">
-          How to Use
-        </a>
-      </div>
+      </footer>
     </div>
   );
 };
