@@ -7,10 +7,12 @@ const Dotenv = require("dotenv-webpack");
 module.exports = {
   entry: {
     popup: path.join(srcDir, "popup.tsx"),
-    options: path.join(srcDir, "options.tsx"),
     background: path.join(srcDir, "background.ts"),
-    content_script: path.join(srcDir, "content_script.tsx"),
-    manageLearnings: path.join(srcDir, "pages/manage-learnings.tsx"),
+    profile: path.join(srcDir, "pages/profile.tsx"),
+    youtube: path.join(srcDir, "content/youtube_content_script.tsx"),
+    amazon: path.join(srcDir, "content/amazon_content_script.tsx"),
+    manual: path.join(srcDir, "content/manual_content_script.tsx"),
+    quiz: path.join(srcDir, "content/quiz_content_script.tsx"),
   },
   output: {
     path: path.join(__dirname, "../dist/js"),

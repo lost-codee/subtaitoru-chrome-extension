@@ -178,7 +178,7 @@ export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
           {!quizCompleted ? (
             <>
               <div className="flex justify-between items-center mb-4">
-                <span className="text-sm font-medium text-gray-600">
+                <span className="text-[14px] font-medium text-gray-600">
                   Level {currentQuestion + 1}
                 </span>
                 <span className="text-sm font-medium text-gray-600">
@@ -196,7 +196,7 @@ export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
                   {quizData[currentQuestion].question}
                 </div>
                 {showHint && (
-                  <p className="text-2xl text-gray-600 text-center mb-4">
+                  <p className="text-[24px] text-gray-600 text-center mb-4">
                     {quizData[currentQuestion].hint}
                   </p>
                 )}
@@ -258,7 +258,7 @@ export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
                 <span>
                   Your score: {score}/{quizData.length}
                 </span>
-                <span className="text-2xl">{score > 4 ? "🎉" : "☹️"}</span>
+                <span className="text-[24px]">{score > 4 ? "🎉" : "☹️"}</span>
               </p>
               <div className="flex justify-center">
                 <button

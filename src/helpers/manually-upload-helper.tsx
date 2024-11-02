@@ -7,9 +7,10 @@ function timeToSeconds(time: string) {
 }
 
 // Components
-import { ParsedSubtitles, tokenizeJapaneseText } from "../utils/parse-subtitle";
+import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
 import { Subtitle } from "../components/subtitles-box";
 import { SubtitlesPopup } from "../components/subtitles-popup";
+import { ParsedSubtitles } from "../utils/parse-vtt";
 
 const video = document.querySelector("video");
 

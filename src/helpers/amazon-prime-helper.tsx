@@ -5,64 +5,90 @@ import { Subtitle } from "../components/subtitles-box";
 import { SubtitlesPopup } from "../components/subtitles-popup";
 
 // utils
-import { tokenizeJapaneseText } from "../utils/parse-subtitle";
+import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
 
 export const AmazonPrimeHelper: React.FC<{
   videoElement: HTMLVideoElement;
 }> = React.memo(({ videoElement }) => {
   const [subtitles, setSubtitles] = useState<Subtitle | null>(null);
-  const previousCaptionText = useRef<string | null>(null);
 
   useEffect(() => {
-    const handleCaptionsUpdate = () => {
-      const captionElements = document.getElementsByClassName(
-        "atvwebplayersdk-captions-text"
-      );
+    const observer = new MutationObserver(handleCaptionChanges);
 
-      if (!captionElements || captionElements.length === 0) {
-        setSubtitles(null);
-        return;
-      }
+    // Initialize the caption observer
+    init(observer);
 
-      // Hide the original captions
-      const captionElement = captionElements[0] as HTMLDivElement;
-      captionElement.style.visibility = "hidden";
-
-      // Extract and trim the caption text
-      const currentCaptionText = captionElement.textContent?.replace(/\s/g, "");
-
-      // Prevent re-render if the caption text hasn't changed
-      if (
-        currentCaptionText &&
-        currentCaptionText !== previousCaptionText.current
-      ) {
-        previousCaptionText.current = currentCaptionText;
-        setSubtitles({
-          id: "1",
-          words: tokenizeJapaneseText(currentCaptionText),
-        });
-      }
-    };
-
-    const observer = new MutationObserver(handleCaptionsUpdate);
-
-    // Observe changes in the DOM
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Cleanup observer on component unmount
     return () => {
+      // Clean up the observer and tooltip on unmount
       observer.disconnect();
-
-      const captionElements = document.getElementsByClassName(
-        "atvwebplayersdk-captions-text"
-      );
-
-      if (captionElements && captionElements.length > 0) {
-        const captionElement = captionElements[0] as HTMLDivElement;
-        captionElement.style.visibility = "visible";
-      }
     };
   }, []);
+
+  const init = (observer: MutationObserver) => {
+    waitForElement(".atvwebplayersdk-captions-overlay").then(() => {
+      const container = document.querySelector(
+        ".atvwebplayersdk-captions-overlay"
+      );
+      if (container) {
+        observer.observe(container, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+      }
+    });
+  };
+
+  const waitForElement = (selector: string): Promise<void> => {
+    return new Promise((resolve) => {
+      if (document.querySelector(selector)) {
+        return resolve();
+      }
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector(selector)) {
+          observer.disconnect();
+          resolve();
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    });
+  };
+
+  const handleCaptionChanges = (mutations: MutationRecord[]) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList" || mutation.type === "characterData") {
+        const captionElements = document.querySelectorAll(
+          ".atvwebplayersdk-captions-text"
+        );
+        captionElements.forEach(processCaptionElement);
+      }
+    });
+  };
+
+  const processCaptionElement = (element: Element) => {
+    const text = element.textContent || "";
+
+    if (text.length === 0) {
+      setSubtitles(null);
+      return;
+    }
+
+    // Hide the original captions
+    const captionElement = element as HTMLDivElement;
+    captionElement.style.visibility = "hidden";
+
+    // Tokenize the caption text
+    const tokens = tokenizeJapaneseText(text);
+    setSubtitles({
+      id: "1",
+      words: tokens,
+    });
+  };
 
   return <SubtitlesPopup subtitle={subtitles} videoElement={videoElement} />;
 });

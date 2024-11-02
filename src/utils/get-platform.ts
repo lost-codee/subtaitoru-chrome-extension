@@ -1,5 +1,5 @@
 // Platform constants
-const PLATFORMS = {
+export const PLATFORMS = {
   YOUTUBE: "youtube",
   AMAZON_PRIME: "amazonPrime",
   NETFLIX: "netflix",
@@ -11,18 +11,25 @@ const HOSTNAMES = {
   NETFLIX: ["netflix.com"],
 };
 
-// Amazon video path constant
 const AMAZON_VIDEO_PATH = "/video";
+const YOUTUBE_VIDEO_PATH = "/watch";
 
 /**
  * Determine the platform based on the current URL and hostname.
  * @returns {string | null} - The detected platform or null if none matched.
  */
-export function getPlatform(): string | null {
-  const { hostname, pathname } = new URL(window.location.href);
+export function getPlatform(url?: string): string | null {
+  if (!url) {
+    return null;
+  }
+
+  const { hostname, pathname } = new URL(url);
 
   // Check for YouTube platform
-  if (HOSTNAMES.YOUTUBE.some((domain) => hostname.includes(domain))) {
+  if (
+    HOSTNAMES.YOUTUBE.some((domain) => hostname.includes(domain)) &&
+    pathname.includes(YOUTUBE_VIDEO_PATH)
+  ) {
     return PLATFORMS.YOUTUBE;
   }
 

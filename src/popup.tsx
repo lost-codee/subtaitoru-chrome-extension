@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 
 // utils
-import { parseVTT } from "./utils/parse-subtitle";
+import { parseVTT } from "./utils/parse-vtt";
 import { cn } from "./utils/cn";
 import { SHOW_QUIZ_POPUP } from "./constants/message";
 
@@ -83,23 +83,15 @@ const Popup = () => {
       const activeTab = tabs[0];
 
       // Inject the content script into the active tab if not already injected
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: activeTab.id as number },
-          files: ["js/vendor.js", "js/content_script.js"],
-        },
-        () => {
-          // Once injected, send a message to the content script to open the quiz modal
-          chrome.tabs.sendMessage(activeTab.id as number, {
-            action: SHOW_QUIZ_POPUP,
-          });
-        }
-      );
+      chrome.scripting.executeScript({
+        target: { tabId: activeTab.id as number },
+        files: ["js/quiz.js", "js/vendor.js"],
+      });
     });
   };
 
   const handleManageLearnings = () => {
-    chrome.tabs.create({ url: "manage-learnings.html" });
+    chrome.tabs.create({ url: "profile.html" });
   };
 
   useEffect(() => {

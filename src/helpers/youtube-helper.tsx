@@ -5,7 +5,7 @@ import { Subtitle } from "../components/subtitles-box";
 import { SubtitlesPopup } from "../components/subtitles-popup";
 
 // utils
-import { tokenizeJapaneseText } from "../utils/parse-subtitle";
+import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
 
 export const YoutubeHelper: React.FC<{
   videoElement: HTMLVideoElement;
@@ -79,8 +79,12 @@ export const YoutubeHelper: React.FC<{
     }
 
     // Hide the original captions
-    const captionElement = element as HTMLDivElement;
-    captionElement.style.visibility = "hidden";
+    const containerElement = document.querySelector(
+      ".ytp-caption-window-container"
+    ) as HTMLDivElement;
+    if (containerElement) {
+      containerElement.style.visibility = "hidden";
+    }
 
     // Tokenize the caption text
     const tokens = tokenizeJapaneseText(text);

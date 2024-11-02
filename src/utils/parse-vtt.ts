@@ -1,24 +1,10 @@
-import TinySegmenter from "tiny-segmenter";
+import { tokenizeJapaneseText } from "./tokenize-japanese-text";
 
 export interface ParsedSubtitles {
   startTime: string;
   endTime: string;
   text: string[];
 }
-
-const segmenter = new TinySegmenter();
-
-/**
- * Tokenize a given Japanese string into individual words (morphemes).
- * The word boundary detection is done by the TinySegmenter library.
- *
- * @param {string} text - Japanese text to tokenize.
- * @returns {string[]} - Array of individual words (morphemes) in the text.
- */
-export const tokenizeJapaneseText = (text: string): string[] => {
-  const tokens = segmenter.segment(text);
-  return tokens as string[];
-};
 
 /**
  * Parse a VTT (WebVTT) string into an array of subtitle objects.

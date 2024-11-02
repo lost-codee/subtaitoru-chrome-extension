@@ -169,7 +169,7 @@ export const SubtitlesBox = React.forwardRef<
       )}
       {isLoading && (
         <div className="bg-white text-black p-2 rounded-md text-center mb-2 w-64 animate-[fadeIn]">
-          <div className="flex items-center justify-center text-sm">
+          <div className="flex items-center justify-center text-[14px]">
             <span>Waiting for translation</span>
             <Loading />
           </div>
