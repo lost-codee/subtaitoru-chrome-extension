@@ -1,16 +1,9 @@
 import React from "react";
 import ErrorBoundary from "./error-boundary";
-
-// Word information interface with refined typing
-export interface WordInfo {
-  word: string;
-  reading: string;
-  senses: Array<{ english_definitions: string; parts_of_speech: string }>;
-  jlptLevel?: string; // Optional JLPT Level
-}
+import { Word } from "../types";
 
 interface TranslationPopupProps {
-  word: WordInfo;
+  word: Word;
   onClose: () => void;
 }
 

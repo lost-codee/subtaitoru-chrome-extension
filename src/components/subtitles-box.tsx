@@ -4,8 +4,9 @@ import * as wanakana from "wanakana";
 // components
 import { Loading } from "./loading";
 
-// models
-import { WordInfo, TranslationPopup } from "./translation-popup";
+// Models
+import { TranslationPopup } from "./translation-popup";
+import { Word } from "../types";
 
 // utils
 import { cn } from "../utils/cn";
@@ -20,7 +21,7 @@ export interface SubtitleOverlayProps {
   videoElement: HTMLVideoElement;
 }
 
-export interface ClickedWord extends WordInfo {
+export interface ClickedWord extends Word {
   timestamp: number;
 }
 
@@ -46,7 +47,7 @@ const getWordFromStorage = (word: string): Promise<ClickedWord | null> => {
 };
 
 // Fetch translation data from API
-const fetchWordTranslation = async (word: string): Promise<WordInfo | null> => {
+const fetchWordTranslation = async (word: string): Promise<Word | null> => {
   try {
     const response = await fetch(
       `${process.env.TRANSLATION_API_URL}?keyword=${word}`
@@ -54,7 +55,7 @@ const fetchWordTranslation = async (word: string): Promise<WordInfo | null> => {
     const apiResponse = await response.json();
     if (apiResponse && apiResponse.data && apiResponse.data.length > 0) {
       const data = apiResponse.data[0];
-      const wordInfo: WordInfo = {
+      const wordInfo: Word = {
         word: data.japanese[0].word,
         reading: data.japanese[0].reading,
         jlptLevel: data.jlpt.join(", "),
@@ -79,13 +80,12 @@ const areWordsEqual = (word1: string, word2: string) => {
   return normalizedWord1 === normalizedWord2;
 };
 
-// SubtitlesBox component
 export const SubtitlesBox = React.forwardRef<
   HTMLDivElement,
   SubtitleOverlayProps
 >(({ subtitle, videoElement }, ref) => {
   const [showWordPopup, setShowWordPopup] = useState(false);
-  const [wordInfo, setWordInfo] = useState<WordInfo | null>(null);
+  const [wordInfo, setWordInfo] = useState<Word | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleOnWordClick = async (word: string) => {
@@ -135,7 +135,7 @@ export const SubtitlesBox = React.forwardRef<
     }
   };
 
-  // Memoized effect to handle play event and close the popup
+  // effect to handle play event and close the popup
   useEffect(() => {
     const handleVideoPlay = () => {
       setShowWordPopup(false);

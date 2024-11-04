@@ -1,18 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
-// style
-import "./index.css";
-
-// utils
+// Utils
 import { parseVTT } from "./utils/parse-vtt";
 import { cn } from "./utils/cn";
-import { SHOW_QUIZ_POPUP } from "./constants/message";
+
+// Constants
+import { DEFAULT_FONT_SIZE } from "./constants";
+
+// Style
+import "./index.css";
 
 const Popup = () => {
   const [showSubtitles, setShowSubtitles] = useState(false);
   const [color, setColor] = useState("#383838");
-  const [fontSize, setFontSize] = useState("32px");
+  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);

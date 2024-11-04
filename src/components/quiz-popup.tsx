@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-// components
+// Components
 import { Loading } from "./loading";
 
-// models
+// Models
 import { ClickedWord } from "./subtitles-box";
-
-interface QuizData {
-  question: string;
-  hint: string;
-  correctAnswer: string;
-  answers: string[];
-}
+import { QuizData } from "../types";
 
 const API_URL = `${process.env.TRANSLATION_API_URL}?keyword=`;
 
@@ -142,7 +136,41 @@ export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
   }
 
   if (quizData.length === 0) {
-    return null;
+    // show no data message
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-transparent p-4 fixed top-0 left-0 right-0 bottom-0 z-[9999]">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gray-800 p-6 relative">
+            <h2 className="text-2xl font-bold text-white text-center">
+              No Data
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <p className="text-center text-gray-400 text-sm mt-2">
+              You need to add some words to your vocabulary list first. or
+              Something went wrong.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const progress = ((currentQuestion + 1) / quizData.length) * 100;

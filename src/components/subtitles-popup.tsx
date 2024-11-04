@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { QuizPopup } from "./quiz-popup";
 import { Subtitle, SubtitlesBox } from "./subtitles-box";
-import { cn } from "../utils/cn";
+import { DEFAULT_FONT_SIZE } from "../constants";
 
 export const SubtitlesPopup: React.FC<{
   subtitle?: Subtitle | null;
   videoElement: HTMLVideoElement;
 }> = ({ subtitle, videoElement }) => {
-  const [fontSize, setFontSize] = useState("16px");
+  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [color, setColor] = useState("#fff");
   const subtitleWrapperRef = useRef<HTMLDivElement>(null);
 
