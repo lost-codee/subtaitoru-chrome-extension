@@ -3,24 +3,28 @@ import { getPlatform, PLATFORMS } from "./utils/get-platform";
 
 // Function to inject scripts based on platform
 const injectScripts = (tabId: number, url: string) => {
-  const platform = getPlatform(url);
-  console.log(platform);
-  switch (platform) {
-    case PLATFORMS.YOUTUBE:
-      chrome.scripting.executeScript({
-        target: { tabId },
-        files: ["js/youtube.js", "js/vendor.js"],
-      });
-      break;
-    case PLATFORMS.AMAZON_PRIME:
-      chrome.scripting.executeScript({
-        target: { tabId },
-        files: ["js/amazon.js", "js/vendor.js"],
-      });
-      break;
-    default:
-      break;
-  }
+  // check if show subtitles is enable
+  chrome.storage.local.get(["showSubtitles"], (result) => {
+    if (result.showSubtitles) {
+      const platform = getPlatform(url);
+      switch (platform) {
+        case PLATFORMS.YOUTUBE:
+          chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["js/youtube.js", "js/vendor.js"],
+          });
+          break;
+        case PLATFORMS.AMAZON_PRIME:
+          chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["js/amazon.js", "js/vendor.js"],
+          });
+          break;
+        default:
+          break;
+      }
+    }
+  });
 };
 
 // Listen for updates in the tab status (e.g., loading complete or audible change)
