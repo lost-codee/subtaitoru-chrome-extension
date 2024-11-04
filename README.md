@@ -32,7 +32,7 @@ Test your knowledge of Japanese vocabulary with interactive quizzes. Great way t
 
 #### Manage your vocabulary
 
-Keep track of the vocabulary you've learned with the built-in vocabulary manager. Add tags, notes, and more to help you remember tricky words.
+Keep track of the vocabulary you've learned with the built-in vocabulary manager.
 
 ![Screenshot of the extension in action](./screenshots/Screenshot%202024-10-27%20120828.png)
 
