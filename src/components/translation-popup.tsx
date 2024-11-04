@@ -14,6 +14,11 @@ export const TranslationPopup: React.FC<TranslationPopupProps> = ({
   // Generate the Jisho URL for the word
   const jishoUrl = `https://jisho.org/search/${encodeURIComponent(word.word)}`;
 
+  const openJisho = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.stopPropagation();
+    window.open(jishoUrl, "_blank");
+  };
+
   return (
     <ErrorBoundary>
       <div className="bg-black/90 text-white rounded-xl p-4 w-[300px] shadow-lg relative flex flex-col gap-4  max-h-[400px] overflow-y-auto">
@@ -49,6 +54,7 @@ export const TranslationPopup: React.FC<TranslationPopupProps> = ({
               ))}
               {/* Add Jisho link */}
               <a
+                onClick={openJisho}
                 href={jishoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
