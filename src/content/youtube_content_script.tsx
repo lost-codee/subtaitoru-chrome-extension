@@ -8,14 +8,9 @@ import { YoutubeHelper } from "../helpers/youtube-helper";
 const SUBTAITORU_ROOT_ID = "subtaitoru-react-root-youtube";
 
 const renderSubtitles = (videoElement: HTMLVideoElement) => {
-  const alreadyRendered = document.getElementById(SUBTAITORU_ROOT_ID);
-
-  if (alreadyRendered) {
-    // remove the old one
-    alreadyRendered.parentNode?.removeChild(alreadyRendered);
+  if (document.getElementById(SUBTAITORU_ROOT_ID)) {
     return;
   }
-
   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
   videoElement.parentElement?.appendChild(shadowRoot.host);
   videoElement.style.position = "relative";
