@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// components
-import { Subtitle } from "../components/subtitles-box";
+// Components
 import { SubtitlesPopup } from "../components/subtitles-popup";
 
-// utils
+// Utils
 import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
 
 export const YoutubeHelper: React.FC<{
   videoElement: HTMLVideoElement;
 }> = React.memo(({ videoElement }) => {
-  const [subtitles, setSubtitles] = useState<Subtitle | null>(null);
+  const [subtitles, setSubtitles] = useState<string[] | null>(null);
 
   useEffect(() => {
     const observer = new MutationObserver(handleCaptionChanges);
@@ -63,6 +62,10 @@ export const YoutubeHelper: React.FC<{
         const captionElements = document.querySelectorAll(
           ".ytp-caption-segment"
         );
+        if (captionElements.length === 0) {
+          setSubtitles(null);
+          return;
+        }
         captionElements.forEach(processCaptionElement);
       }
     });
@@ -88,11 +91,8 @@ export const YoutubeHelper: React.FC<{
 
     // Tokenize the caption text
     const tokens = tokenizeJapaneseText(text);
-    setSubtitles({
-      id: "1",
-      words: tokens,
-    });
+    setSubtitles(tokens);
   };
 
-  return <SubtitlesPopup subtitle={subtitles} videoElement={videoElement} />;
+  return <SubtitlesPopup subtitles={subtitles} videoElement={videoElement} />;
 });

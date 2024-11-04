@@ -7,17 +7,15 @@ function timeToSeconds(time: string) {
 }
 
 // Components
-import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
-import { Subtitle } from "../components/subtitles-box";
 import { SubtitlesPopup } from "../components/subtitles-popup";
 import { ParsedSubtitles } from "../utils/parse-vtt";
-
-const video = document.querySelector("video");
 
 export const ManuallyUploadHelper: React.FC = () => {
   const [showSubtitles, setShowSubtitles] = useState(false);
   const [parsedSubtitles, setParsedSubtitles] = useState<ParsedSubtitles[]>([]);
-  const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>();
+  const [currentSubtitle, setCurrentSubtitle] = useState<string[] | null>();
+
+  const video = document.querySelector("video");
 
   useEffect(() => {
     chrome.storage.local.get(["showSubtitles", "subtitle"], (result) => {
@@ -43,10 +41,7 @@ export const ManuallyUploadHelper: React.FC = () => {
       );
 
       if (currentParsedSubtitle) {
-        setCurrentSubtitle({
-          id: currentParsedSubtitle.startTime,
-          words: currentParsedSubtitle.text,
-        });
+        setCurrentSubtitle(currentParsedSubtitle.text);
       } else {
         setCurrentSubtitle(null);
       }
@@ -62,5 +57,5 @@ export const ManuallyUploadHelper: React.FC = () => {
     return null;
   }
 
-  return <SubtitlesPopup subtitle={currentSubtitle} videoElement={video} />;
+  return <SubtitlesPopup subtitles={currentSubtitle} videoElement={video} />;
 };

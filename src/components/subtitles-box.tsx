@@ -11,13 +11,8 @@ import { Word } from "../types";
 // utils
 import { cn } from "../utils/cn";
 
-export interface Subtitle {
-  id: string;
-  words: string[];
-}
-
 export interface SubtitleOverlayProps {
-  subtitle?: Subtitle | null;
+  subtitles: string[] | null | undefined;
   videoElement: HTMLVideoElement;
 }
 
@@ -83,7 +78,7 @@ const areWordsEqual = (word1: string, word2: string) => {
 export const SubtitlesBox = React.forwardRef<
   HTMLDivElement,
   SubtitleOverlayProps
->(({ subtitle, videoElement }, ref) => {
+>(({ subtitles, videoElement }, ref) => {
   const [showWordPopup, setShowWordPopup] = useState(false);
   const [wordInfo, setWordInfo] = useState<Word | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -158,7 +153,7 @@ export const SubtitlesBox = React.forwardRef<
       ref={ref}
       className={cn(
         "flex flex-col gap-2 items-center pointer-events-auto cursor-pointer",
-        subtitle ? "" : "hidden"
+        subtitles ? "" : "hidden"
       )}
     >
       {showWordPopup && wordInfo && (
@@ -176,7 +171,7 @@ export const SubtitlesBox = React.forwardRef<
         </div>
       )}
       <div className="bg-black bg-opacity-75 text-white p-4 rounded-lg shadow-md leading-normal">
-        {subtitle?.words.map((word, index) => (
+        {subtitles?.map((word, index) => (
           <span
             key={index}
             className="inline-block cursor-pointer px-1 rounded transition-colors duration-300 ease-in-out hover:bg-white hover:bg-opacity-20"
