@@ -41,3 +41,20 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     injectScripts(activeInfo.tabId, tab.url);
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === "settingsChanged") {
+    // remove content script when settings is changed
+    chrome.scripting.executeScript({
+      target: { tabId: request.tab },
+      func: () => {
+        // remove old element to inject the new script with the new settings
+        const element = document.getElementById("subtaitoru-react-root");
+        if (element) {
+          element.remove();
+        }
+      },
+    });
+    injectScripts(request.tab, request.url);
+  }
+});

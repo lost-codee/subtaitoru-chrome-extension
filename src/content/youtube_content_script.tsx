@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import { createShadowContainer } from "../utils/create-shadow-container";
 import { YoutubeHelper } from "../helpers/youtube-helper";
 
-const SUBTAITORU_ROOT_ID = "subtaitoru-react-root-youtube";
+const SUBTAITORU_ROOT_ID = "subtaitoru-react-root";
 
 const renderSubtitles = (videoElement: HTMLVideoElement) => {
   if (document.getElementById(SUBTAITORU_ROOT_ID)) {

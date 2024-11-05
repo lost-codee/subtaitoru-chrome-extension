@@ -53,6 +53,19 @@ const Popup = () => {
     }
   };
 
+  const handleSendSettings = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        type: "settingsChanged",
+        tab: tabs[0].id,
+        url: tabs[0].url,
+        color,
+        fontSize,
+        showSubtitles,
+      });
+    });
+  };
+
   const handleFontSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -60,6 +73,7 @@ const Popup = () => {
     chrome.storage.local.set({
       fontSize: event.target.value,
     });
+    handleSendSettings();
   };
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +81,7 @@ const Popup = () => {
     chrome.storage.local.set({
       fontColor: event.target.value,
     });
+    handleSendSettings();
   };
 
   const handleShowSubtitlesChange = (showSubtitles: boolean) => {
@@ -74,6 +89,7 @@ const Popup = () => {
     chrome.storage.local.set({
       showSubtitles,
     });
+    handleSendSettings();
   };
 
   const handleUploadClick = () => {
@@ -118,16 +134,42 @@ const Popup = () => {
 
   return (
     <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
-      <header className="flex items-center mb-6">
-        <div
-          className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-2"
-          aria-hidden="true"
+      <header className="flex items-center mb-6 justify-between">
+        <a
+          className="flex items-center"
+          href="https://subtaitoru-web.vercel.app"
+          target="_blank"
         >
-          <span className="text-white font-bold text-lg">S</span>
-        </div>
-        <h1 className="text-xl font-bold">Subtaitoru</h1>
+          <div
+            className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-2"
+            aria-hidden="true"
+          >
+            <span className="text-white font-bold text-lg">S</span>
+          </div>
+          <h1 className="text-xl font-bold">Subtaitoru</h1>
+        </a>
+        <button
+          type="button"
+          className="text-gray-800 font-semibold"
+          onClick={() => handleSendSettings()}
+          aria-label="Refresh"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </header>
-
       <main>
         {/* <div className="mb-6">
           <label htmlFor="file-upload" className="flex space-x-2 mb-2 ">

@@ -170,7 +170,7 @@ export const SubtitlesBox = React.forwardRef<
           </div>
         </div>
       )}
-      <div className="bg-black bg-opacity-75 text-white p-4 rounded-lg shadow-md leading-normal">
+      <div className="bg-black bg-opacity-75 p-4 rounded-lg shadow-md leading-normal">
         {subtitles?.map((word, index) => (
           <span
             key={index}

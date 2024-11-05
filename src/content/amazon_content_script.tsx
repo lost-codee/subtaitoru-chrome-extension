@@ -7,7 +7,7 @@ import { AmazonPrimeHelper } from "../helpers/amazon-prime-helper";
 // utils
 import { createShadowContainer } from "../utils/create-shadow-container";
 
-const SUBTAITORU_ROOT_ID = "subtaitoru-react-root-amazon-prime";
+const SUBTAITORU_ROOT_ID = "subtaitoru-react-root";
 
 const renderSubtitles = (videoElement: HTMLVideoElement) => {
   if (document.getElementById(SUBTAITORU_ROOT_ID)) {
