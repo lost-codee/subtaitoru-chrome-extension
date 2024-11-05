@@ -4,3 +4,4 @@ dist/
 tmp/
 yarn.lock
 .env
+dist.zip
