@@ -17,6 +17,35 @@ const renderSubtitles = (videoElement: HTMLVideoElement) => {
   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
   videoElement.parentElement?.appendChild(shadowRoot.host);
 
+  const videoContainer = document.getElementsByClassName(
+    "webPlayerUIContainer"
+  )[0];
+
+  const checkMousePosition = (e: MouseEvent) => {
+    const rect = videoContainer.getBoundingClientRect();
+
+    const isMouseInContainer =
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom;
+
+    if (isMouseInContainer) {
+      videoElement.pause();
+      videoElement.dataset.pausedByHover = "true";
+    }
+  };
+
+  document.addEventListener("mousemove", checkMousePosition);
+
+  // Cleanup function
+  const cleanup = () => {
+    document.removeEventListener("mousemove", checkMousePosition);
+  };
+
+  // Add cleanup to window unload
+  window.addEventListener("unload", cleanup);
+
   ReactDOM.render(
     <React.StrictMode>
       <AmazonPrimeHelper videoElement={videoElement} />
