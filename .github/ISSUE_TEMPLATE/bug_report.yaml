@@ -1,6 +1,6 @@
-name: "Bug Fix"
-description: "Use this form to report bugs."
-title: "[ISSUE] Brief description of issue"
+name: "🐛 Bug Report"
+description: "Use this template to report a bug or issue."
+title: "[BUG] Brief description of the issue"
 labels: ["bug"]
 assignees: []
 
@@ -8,34 +8,56 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## 📝 Issue Template: Bug Fix
+        ## 🐞 Bug Report
 
-        Please fill out each section to help us understand your request.
-
-  - type: textarea
-    id: issue_description
-    attributes:
-      label: "Description"
-      description: "What’s the issue or feature you're proposing? Describe it in detail."
-      placeholder: "Brief description (e.g., add a feature that allows XYZ)"
+        Please provide details about the bug. This helps us understand and resolve the issue.
 
   - type: textarea
-    id: suggested_files
+    id: bug_description
     attributes:
-      label: "Files to Modify"
-      description: "Which files might need changes? Please list them as a comma-separated list."
+      label: "Bug Description"
+      description: "Describe the bug you're experiencing."
+      placeholder: "Brief description of the bug (e.g., the application crashes when...)"
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Provide the steps to reproduce the issue."
+      placeholder: "1. Go to '...'\n2. Click on '...'\n3. See error"
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen?"
+      placeholder: "Describe the expected behavior..."
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened?"
+      placeholder: "Describe what actually happened..."
+
+  - type: textarea
+    id: affected_files
+    attributes:
+      label: "Affected Files"
+      description: "List the files or modules you think may be affected."
       placeholder: "src/file1.py, src/file2.js"
 
   - type: dropdown
-    id: new_files_needed
+    id: is_regression
     attributes:
-      label: "Are new files needed?"
-      description: "Do you think new files are required for this feature?"
+      label: "Is this a regression?"
+      description: "Did this issue start happening after a recent update?"
       options:
         - "Yes"
         - "No"
+        - "Unsure"
 
   - type: markdown
     attributes:
       value: |
-        **Thank you for helping us improve!**
+        **Thank you for reporting this bug! We’ll address it as soon as possible.**
