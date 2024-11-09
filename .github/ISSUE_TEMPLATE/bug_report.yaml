@@ -1,0 +1,41 @@
+name: "Bug Fix"
+description: "Use this form to report bugs."
+title: "[ISSUE] Brief description of issue"
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Issue Template: Bug Fix
+
+        Please fill out each section to help us understand your request.
+
+  - type: textarea
+    id: issue_description
+    attributes:
+      label: "Description"
+      description: "What’s the issue or feature you're proposing? Describe it in detail."
+      placeholder: "Brief description (e.g., add a feature that allows XYZ)"
+
+  - type: textarea
+    id: suggested_files
+    attributes:
+      label: "Files to Modify"
+      description: "Which files might need changes? Please list them as a comma-separated list."
+      placeholder: "src/file1.py, src/file2.js"
+
+  - type: dropdown
+    id: new_files_needed
+    attributes:
+      label: "Are new files needed?"
+      description: "Do you think new files are required for this feature?"
+      options:
+        - "Yes"
+        - "No"
+
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for helping us improve!**

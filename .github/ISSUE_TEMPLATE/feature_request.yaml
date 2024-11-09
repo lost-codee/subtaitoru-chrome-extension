@@ -1,0 +1,47 @@
+name: "✨ Feature Request"
+description: "Use this template to request a new feature or enhancement."
+title: "[FEATURE] Brief description of the feature"
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### ✨ Feature Request
+        Please describe the feature you would like to see added.
+
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: "Feature Description"
+      description: "Provide a detailed description of the feature or enhancement."
+      placeholder: "Brief description of the feature (e.g., add a search function to...)"
+
+  - type: textarea
+    id: reason_for_feature
+    attributes:
+      label: "Reason for Feature"
+      description: "Why is this feature important or beneficial?"
+      placeholder: "Explain why this feature would be helpful..."
+
+  - type: textarea
+    id: suggested_files
+    attributes:
+      label: "Files to Modify"
+      description: "List any files that might need changes to add this feature."
+      placeholder: "src/file1.py, src/file2.js"
+
+  - type: dropdown
+    id: new_files_needed
+    attributes:
+      label: "Are new files needed?"
+      description: "Do you think new files will be required for this feature?"
+      options:
+        - "Yes"
+        - "No"
+
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for suggesting this feature! We’ll review and consider it for future updates.**

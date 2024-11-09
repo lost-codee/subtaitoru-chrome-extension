@@ -1,71 +1,68 @@
-# Subtitles Browser Extension
+# 📺 Subtitles Browser Extension
 
-## Overview
+## 🌟 Overview
 
-This project is a browser extension that provides subtitles for videos. It uses React and JavaScript to parse and display subtitles in an overlay on top of the video.
+This browser extension lets you add interactive subtitles to videos, helping you learn Japanese while enjoying your favorite shows. Built with React and JavaScript, it overlays custom subtitles and provides definitions on hover for an immersive learning experience.
 
-## Features
+## 🚀 Key Features
 
-- Parses VTT (WebVTT) subtitle files and displays them in an overlay on top of the video
-- Utilizes React to render the subtitle overlay and manage user interactions
-- Stores subtitle files in local storage using the Chrome storage API
-- Enables users to upload their own subtitle files
-- Supports multiple video platforms for subtitle integration
+- **Subtitle Overlay**: Displays subtitles from uploaded VTT (WebVTT) files on top of any video.
+- **Interactive Learning**: Hover over words for definitions, JLPT levels, and more.
+- **Vocabulary Tracking**: Manage and track your learned vocabulary.
+- **Multi-Platform Support**: Works with popular video platforms. (Supports: AmazonPrime, Youtube)
 
-## Demo
+## 🎬 Demo
 
-### See it in action
+### See It In Action
 
-This extension is more than just a subtitle display. It's an interactive learning tool that helps you learn Japanese while watching your favorite TV shows and movies.
+![Screenshot of the extension](./screenshots/Screenshot%202024-10-26%20185301.png)
 
-#### Get instant definitions and more
+Learn Japanese in real-time with interactive subtitles and popovers for definitions.
 
-Hover over a word to see its definition, JLPT level, and more. The perfect way to learn new vocabulary while watching your favorite shows.
+### Take Quizzes
 
-![Screenshot of the extension in action](./screenshots/Screenshot%202024-10-26%20185301.png)
+![Screenshot of the quiz feature](./screenshots/Screenshot%202024-10-26%20184203.png)
 
-#### Play quizzes to test your knowledge
+Reinforce your knowledge with vocabulary quizzes to test your skills.
 
-Test your knowledge of Japanese vocabulary with interactive quizzes. Great way to reinforce your learning and have fun at the same time.
+### Vocabulary Management
 
-![Screenshot of the extension in action](./screenshots/Screenshot%202024-10-26%20184203.png)
+![Screenshot of vocabulary manager](./screenshots/Screenshot%202024-10-27%20120828.png)
 
-#### Manage your vocabulary
+Track what you've learned with a built-in vocabulary manager.
 
-Keep track of the vocabulary you've learned with the built-in vocabulary manager.
+## 🛠 Components
 
-![Screenshot of the extension in action](./screenshots/Screenshot%202024-10-27%20120828.png)
+- **SubtitlesContainer**: Renders the subtitle overlay and manages user actions.
+- **SubtitleOverlay**: Displays subtitle text with custom styling.
+- **WordPopover**: Shows additional word details on hover.
 
-## Components
+## 🔧 Functions
 
-- **SubtitlesContainer**: A React component that renders the subtitle overlay and handles user interactions
-- **SubtitleOverlay**: A React component that displays the subtitle text and manages styling
-- **WordPopover**: A React component that shows a popover with additional information about a word
+- **parseVTT**: Parses VTT files for subtitle content.
+- **loadSubtitles**: Loads subtitles from local storage.
+- **handleFileChange**: Updates local storage with user-uploaded subtitles.
+- **toggleOverlay**: Shows or hides the subtitle overlay.
 
-## Functions
+## 🎨 Styling
 
-- **parseVTT**: Parses VTT subtitle files and returns an array of subtitle objects
-- **loadSubtitles**: Loads subtitle files from local storage and updates the subtitle overlay
-- **handleFileChange**: Manages user-uploaded subtitle files and updates local storage
-- **toggleOverlay**: Toggles the visibility of the subtitle overlay on and off
+Styled with CSS and Tailwind CSS for a sleek, modern UI.
 
-## Styles
+## 📥 Installation
 
-The project uses CSS and Tailwind CSS to style the subtitle overlay and popover components.
+1. **Clone** the repository: `git clone [repository URL]`
+2. **Install dependencies**: `npm install`
+3. **Build the project**: `npm run build`
+4. **Load as an extension**:
+   - Go to `chrome://extensions/`
+   - Enable Developer Mode
+   - Click "Load unpacked" and select the project folder.
 
-## Installation
+## ▶️ Usage
 
-To install this project, follow these steps:
+1. Play a video in your browser.
+2. Toggle subtitles by clicking the extension icon.
 
-1. Clone the repository to your local machine
-2. Run `npm install` to install dependencies
-3. Build the project using `npm run build`
-4. Load the extension into your browser using the `chrome://extensions/` page
+## 🤝 Contributing
 
-## Usage
-
-To use this project, follow these steps:
-
-1. Load a video in your browser
-2. Click the extension icon to toggle the subtitle overlay on and off
-3. Upload your own subtitle files using the file input field
+Found a bug or have a feature request? Open an issue and let us know!
