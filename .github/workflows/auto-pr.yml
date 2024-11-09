@@ -128,7 +128,7 @@ jobs:
                         Files to consider: {project_info}
                         Additional requirements: {'New files needed.' if new_files_needed else 'Only modify existing files.'}
                         
-                        Provide the specific files that need to be modified and their changes.
+                        Provide the code changes needed to resolve the issue.
                         Format your response as a JSON object with file paths as keys and their new content as values.
                         Only include files that need to be modified."""}
                       ]
