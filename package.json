@@ -1,50 +1,25 @@
 {
-  "name": "Subtaitoru",
-  "version": "1.1.0",
-  "description": "Learn japanese while watching your favorite movie/anime with this Chrome Extension",
-  "main": "index.js",
-  "scripts": {
-    "build:shadow-css": "tailwindcss -i src/shadow-styles.css -o src/generated-shadow-styles.css --minify",
-    "prebuild": "npm run build:shadow-css",
-    "build": "webpack --config webpack/webpack.prod.js",
-    "watch": "npm run prebuild && webpack --config webpack/webpack.dev.js --watch",
-    "clean": "rimraf dist",
-    "test": "npx jest",
-    "style": "prettier --write \"src/**/*.{ts,tsx}\""
+  'name': 'your-package-name',
+  'version': '1.0.0',
+  'description': '',
+  'main': 'index.js',
+  'scripts': {
+    'start': 'webpack-cli serve --open --config webpack/webpack.dev.js',
+    'build': 'webpack --config webpack/webpack.prod.js',
+    'test': 'jest',
+    'lint': 'eslint . --ext .ts,.tsx,.js,.jsx',
+    'lint:fix': 'npm run lint -- --fix',
+    'precommit': 'lint-staged',
+    'prepare': 'husky install',
+    'types': 'tsc --noEmit'
   },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "tiny-segmenter": "^0.2.0",
-    "wanakana": "^5.3.1"
-  },
-  "devDependencies": {
-    "@types/chrome": "0.0.158",
-    "@types/jest": "^27.0.2",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "@types/tiny-segmenter": "^0.2.0",
-    "autoprefixer": "^10.4.7",
-    "copy-webpack-plugin": "^9.0.1",
-    "css-loader": "^6.7.1",
-    "dotenv-webpack": "^8.1.0",
-    "glob": "^7.1.6",
-    "jest": "^27.2.1",
-    "mini-css-extract-plugin": "^2.9.1",
-    "postcss": "^8.4.14",
-    "postcss-loader": "^7.0.0",
-    "prettier": "^2.2.1",
-    "raw-loader": "^4.0.2",
-    "rimraf": "^3.0.2 ",
-    "style-loader": "^3.3.1",
-    "tailwindcss": "^3.1.4",
-    "ts-jest": "^27.0.5",
-    "ts-loader": "^8.0.0",
-    "typescript": "^4.4.3 ",
-    "webpack": "^5.61.0",
-    "webpack-cli": "^4.0.0",
-    "webpack-merge": "^5.0.0"
+  'keywords': [],
+  'author': '',
+  'license': 'ISC',
+  'dependencies': {
+    'firebase': '^8.2.1',
+    'react': '^17.0.1',
+    'react-dom': '^17.0.1',
+    // your other dependencies...
   }
 }
