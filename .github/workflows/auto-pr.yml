@@ -1,88 +1,43 @@
-name: Auto PR Creation on Issue
+name: AI-Powered Issue Resolution
 
 on:
   issues:
     types: [opened]
 
 jobs:
-  generate-pr:
+  create-pr:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Use Codex to generate code changes
+        env:
+          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Get issue details
+          issue_title=$(jq -r '.issue.title' "$GITHUB_EVENT_PATH")
+          issue_body=$(jq -r '.issue.body' "$GITHUB_EVENT_PATH")
+          repo_name=$(jq -r '.repository.name' "$GITHUB_EVENT_PATH")
+          repo_owner=$(jq -r '.repository.owner.login' "$GITHUB_EVENT_PATH")
+
+          # Provide context to Codex
+          context=$(jq -n --arg title "$issue_title" --arg body "$issue_body" --arg repo "$repo_name" --arg owner "$repo_owner" '{
+            "title": $title,
+            "description": $body,
+            "repository": $repo,
+            "owner": $owner
+          }')
+
+          # Use Codex to generate code changes
+          code_changes=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CODEX_API_KEY" \
+                         -d "$context" https://api.openai.com/v1/engines/codex/completions)
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
         with:
-          python-version: "3.x"
-
-      - name: Install required Python packages
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
-
-      - name: Call OpenAI API to Generate Code
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_EVENT_ISSUE_TITLE: "${{ github.event.issue.title }}"
-          GITHUB_EVENT_ISSUE_BODY: "${{ github.event.issue.body }}"
-        run: |
-          python -c "
-          import os
-          import requests
-          import json
-
-          # Extract the issue title and body from the GitHub context
-          issue_title = os.getenv('GITHUB_EVENT_ISSUE_TITLE', '')
-          issue_body = os.getenv('GITHUB_EVENT_ISSUE_BODY', '')
-
-          # OpenAI API endpoint and headers
-          openai_url = 'https://api.openai.com/v1/completions'
-          headers = {
-              'Authorization': f'Bearer {os.getenv('OPENAI_API_KEY')}',
-              'Content-Type': 'application/json'
-          }
-
-          # Craft prompt for code generation based on the issue
-          prompt = f'Create a code change to address the following GitHub issue:\n\nTitle: {issue_title}\nDescription: {issue_body}\n\nProvide the full code needed to make the necessary change.'
-
-          # Make the API request
-          response = requests.post(
-              openai_url,
-              headers=headers,
-              json={
-                  'model': 'gpt-4-turbo',
-                  'prompt': prompt,
-                  'temperature': 0.2,
-                  'max_tokens': 800
-              }
-          )
-
-          # Parse response
-          response_json = response.json()
-          generated_code = response_json['choices'][0]['text']
-
-          # Save the generated code to a new file or modify an existing file as needed
-          with open('generated_code.py', 'w') as f:
-              f.write(generated_code)
-                  "
-
-      - name: Create a new branch and commit the code
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b auto-generated-pr
-          git add generated_code.py
-          git commit -m "Auto-generated code based on issue #${{ github.event.issue.number }}"
-
-      - name: Push changes and create a PR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git push origin auto-generated-pr
-
-          # Create a pull request
-          curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
-            -d "{\"title\": \"Auto PR for issue #${{ github.event.issue.number }}\", \"body\": \"This PR is auto-generated based on the issue.\", \"head\": \"auto-generated-pr\", \"base\": \"main\"}" \
-            https://api.github.com/repos/${{ github.repository }}/pulls
+          title: "Fix issue: ${{ github.event.issue.title }}"
+          body: "${{ github.event.issue.body }}"
+          commit-message: "Fix issue: ${{ github.event.issue.title }}"
+          branch: "fix-issue-${{ github.event.issue.number }}"
+          delete-branch: true
