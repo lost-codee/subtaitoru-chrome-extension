@@ -101,6 +101,7 @@ jobs:
               try:
                   # Extract the JSON from the response
                   suggestion = response.choices[0].message.content
+                  print(suggestion)
                   # Find the JSON part (between first { and last })
                   json_start = suggestion.find('{')
                   json_end = suggestion.rfind('}') + 1
@@ -132,8 +133,11 @@ jobs:
 
           # Apply changes
           for file_path, new_content in changes.items():
+              print(f"File Path: {file_path}")
+              print(f"New Content: {new_content}")
               # Ensure directory exists
-              os.makedirs(os.path.dirname(file_path), exist_ok=True)
+              if file_path and os.path.dirname(file_path):
+                  os.makedirs(os.path.dirname(file_path), exist_ok=True)
               with open(file_path, 'w') as f:
                   f.write(new_content)
 
