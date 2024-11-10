@@ -1,5 +1,7 @@
 # 📺 Subtitles Browser Extension
 
+https://subtaitoru.site
+
 ## 🌟 Overview
 
 This browser extension lets you add interactive subtitles to videos, helping you learn Japanese while enjoying your favorite shows. Built with React and JavaScript, it overlays custom subtitles and provides definitions on hover for an immersive learning experience.
