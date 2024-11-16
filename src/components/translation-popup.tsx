@@ -1,6 +1,11 @@
 import React from "react";
+
+// Components
 import ErrorBoundary from "./error-boundary";
+
+// Models
 import { Word } from "../types";
+import { translationService } from "../services/api";
 
 interface TranslationPopupProps {
   word: Word;

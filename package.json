@@ -1,12 +1,12 @@
 {
   "name": "Subtaitoru",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Learn japanese while watching your favorite movie/anime with this Chrome Extension",
   "main": "index.js",
   "scripts": {
-    "build:shadow-css": "tailwindcss -i src/shadow-styles.css -o src/generated-shadow-styles.css --minify",
+    "build:shadow-css": "tailwindcss -i src/app/styles/shadow-styles.css -o  src/app/styles/generated-shadow-styles.css --minify",
     "prebuild": "npm run build:shadow-css",
-    "build": "webpack --config webpack/webpack.prod.js",
+    "build": "npm run prebuild && webpack --config webpack/webpack.prod.js",
     "watch": "npm run prebuild && webpack --config webpack/webpack.dev.js --watch",
     "clean": "rimraf dist",
     "test": "npx jest",

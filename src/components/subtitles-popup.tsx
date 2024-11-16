@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+
+// Components
 import { SubtitlesBox } from "./subtitles-box";
-import { DEFAULT_FONT_SIZE } from "../constants";
+
+// Constants
+import { DEFAULT_FONT_SIZE } from "../lib/constants";
 
 export const SubtitlesPopup: React.FC<{
   subtitles: string[] | null;

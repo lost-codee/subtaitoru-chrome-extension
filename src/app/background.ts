@@ -1,5 +1,8 @@
-// background.ts
-import { getPlatform, PLATFORMS } from "./utils/get-platform";
+// Constants
+import { PLATFORMS, SUBTAITORU_ROOT_ID } from "../lib/constants";
+
+// Utils
+import { getPlatform } from "../utils/get-platform";
 
 // Function to inject scripts based on platform
 const injectScripts = (tabId: number, url: string) => {

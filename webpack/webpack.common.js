@@ -1,18 +1,21 @@
 const webpack = require("webpack");
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
-const srcDir = path.join(__dirname, "..", "src");
 const Dotenv = require("dotenv-webpack");
+
+const srcDir = path.join(__dirname, "..", "src");
+const appDir = path.join(srcDir, "app");
+const contentScriptDir = path.join(appDir, "content-scripts");
 
 module.exports = {
   entry: {
-    popup: path.join(srcDir, "popup.tsx"),
-    background: path.join(srcDir, "background.ts"),
-    profile: path.join(srcDir, "pages/profile.tsx"),
-    youtube: path.join(srcDir, "content/youtube_content_script.tsx"),
-    amazon: path.join(srcDir, "content/amazon_content_script.tsx"),
-    manual: path.join(srcDir, "content/manual_content_script.tsx"),
-    quiz: path.join(srcDir, "content/quiz_content_script.tsx"),
+    popup: path.join(appDir, "popup.tsx"),
+    background: path.join(appDir, "background.ts"),
+    profile: path.join(appDir, "pages/profile.tsx"),
+    youtube: path.join(contentScriptDir, "youtube_content_script.tsx"),
+    amazon: path.join(contentScriptDir, "amazon_content_script.tsx"),
+    manual: path.join(contentScriptDir, "manual_content_script.tsx"),
+    quiz: path.join(contentScriptDir, "quiz_content_script.tsx"),
   },
   output: {
     path: path.join(__dirname, "../dist/js"),

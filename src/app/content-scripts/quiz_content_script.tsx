@@ -2,12 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 // Components
-import { QuizPopup } from "../components/quiz-popup";
+import { QuizPopup } from "../../components/quiz-popup";
 
-// utils
-import { createShadowContainer } from "../utils/create-shadow-container";
+// Utils
+import { createShadowContainer } from "../../utils/create-shadow-container";
 
-const QUIZ_ROOT_ID = "subtaitoru-react-root-quiz";
+// Constants
+import { QUIZ_ROOT_ID } from "../../lib/constants";
 
 const renderQuizPopup = () => {
   const alreadyRendered = document.getElementById(QUIZ_ROOT_ID);

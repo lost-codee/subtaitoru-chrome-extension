@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 
 // Components
-import { SubtitlesPopup } from "../components/subtitles-popup";
+import { SubtitlesPopup } from "../../components/subtitles-popup";
 
 // Utils
-import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
+import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
 
-export const YoutubeHelper: React.FC<{
+export const AmazonPrimeHelper: React.FC<{
   videoElement: HTMLVideoElement;
 }> = React.memo(({ videoElement }) => {
   const [subtitles, setSubtitles] = useState<string[] | null>(null);
@@ -24,8 +24,10 @@ export const YoutubeHelper: React.FC<{
   }, []);
 
   const init = (observer: MutationObserver) => {
-    waitForElement(".ytp-caption-window-container").then(() => {
-      const container = document.querySelector(".ytp-caption-window-container");
+    waitForElement(".atvwebplayersdk-captions-overlay").then(() => {
+      const container = document.querySelector(
+        ".atvwebplayersdk-captions-overlay"
+      );
       if (container) {
         observer.observe(container, {
           childList: true,
@@ -58,9 +60,9 @@ export const YoutubeHelper: React.FC<{
 
   const handleCaptionChanges = (mutations: MutationRecord[]) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === "childList") {
+      if (mutation.type === "childList" || mutation.type === "characterData") {
         const captionElements = document.querySelectorAll(
-          ".ytp-caption-segment"
+          ".atvwebplayersdk-captions-text"
         );
         if (captionElements.length === 0) {
           setSubtitles(null);
@@ -72,8 +74,6 @@ export const YoutubeHelper: React.FC<{
   };
 
   const processCaptionElement = (element: Element) => {
-    if (element.hasAttribute("data-processed")) return;
-
     const text = element.textContent || "";
 
     if (text.length === 0) {
@@ -82,12 +82,8 @@ export const YoutubeHelper: React.FC<{
     }
 
     // Hide the original captions
-    const containerElement = document.querySelector(
-      ".ytp-caption-window-container"
-    ) as HTMLDivElement;
-    if (containerElement) {
-      containerElement.style.visibility = "hidden";
-    }
+    const captionElement = element as HTMLDivElement;
+    captionElement.style.visibility = "hidden";
 
     // Tokenize the caption text
     const tokens = tokenizeJapaneseText(text);

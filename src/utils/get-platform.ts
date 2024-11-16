@@ -1,9 +1,4 @@
-// Platform constants
-export const PLATFORMS = {
-  YOUTUBE: "youtube",
-  AMAZON_PRIME: "amazonPrime",
-  NETFLIX: "netflix",
-};
+import { PLATFORMS } from "../lib/constants";
 
 const HOSTNAMES = {
   YOUTUBE: ["youtube.com", "youtu.be"],

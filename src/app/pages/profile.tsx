@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 
-// models
-import { ClickedWord } from "../components/subtitles-box";
+// Models
+import { ClickedWord } from "../../components/subtitles-box";
 
-// style
-import "../index.css";
+// Style
+import "../styles/index.css";
 
 const ManageLearnings: React.FC = () => {
   const [learnedWords, setLearnedWords] = useState<ClickedWord[]>([]);

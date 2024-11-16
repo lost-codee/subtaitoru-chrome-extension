@@ -2,12 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 // Components
-import { AmazonPrimeHelper } from "../helpers/amazon-prime-helper";
+import { createShadowContainer } from "../../utils/create-shadow-container";
+import { YoutubeHelper } from "../platform-helpers/youtube-helper";
 
-// utils
-import { createShadowContainer } from "../utils/create-shadow-container";
-
-const SUBTAITORU_ROOT_ID = "subtaitoru-react-root";
+// Constants
+import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
 
 const renderSubtitles = (videoElement: HTMLVideoElement) => {
   if (document.getElementById(SUBTAITORU_ROOT_ID)) {
@@ -16,13 +15,10 @@ const renderSubtitles = (videoElement: HTMLVideoElement) => {
 
   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
   videoElement.parentElement?.appendChild(shadowRoot.host);
-
-  const videoContainer = document.getElementsByClassName(
-    "webPlayerUIContainer"
-  )[0];
+  videoElement.style.position = "relative";
 
   const checkMousePosition = (e: MouseEvent) => {
-    const rect = videoContainer.getBoundingClientRect();
+    const rect = videoElement.getBoundingClientRect();
 
     const isMouseInContainer =
       e.clientX >= rect.left &&
@@ -48,19 +44,19 @@ const renderSubtitles = (videoElement: HTMLVideoElement) => {
 
   ReactDOM.render(
     <React.StrictMode>
-      <AmazonPrimeHelper videoElement={videoElement} />
+      <YoutubeHelper videoElement={videoElement} />
     </React.StrictMode>,
     shadowRoot
   );
 };
 
 const init = () => {
-  const container = document.getElementsByClassName("webPlayerSDKContainer")[0];
-  if (container) {
-    const videoElement = container.querySelectorAll("video");
-    if (videoElement && videoElement.length > 0) {
-      renderSubtitles(videoElement[0] as HTMLVideoElement);
-    }
+  const videoElement = document.getElementsByClassName(
+    "video-stream html5-main-video"
+  );
+
+  if (videoElement && videoElement.length > 0) {
+    renderSubtitles(videoElement[0] as HTMLVideoElement);
   }
 };
 

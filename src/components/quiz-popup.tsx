@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 
 // Components
-import { Loading } from "./loading";
+import { Loading } from "./ui/loading";
 
 // Models
 import { ClickedWord } from "./subtitles-box";
 import { QuizData } from "../types";
-
-const API_URL = `${process.env.TRANSLATION_API_URL}?keyword=`;
+import { translationService } from "../services/api";
 
 export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -60,15 +59,13 @@ export const QuizPopup = ({ onClose }: { onClose: () => void }) => {
     const fetchWrongAnswers = async () => {
       setLoading(true);
       try {
-        const response = await fetch(API_URL + "common");
+        const response = await translationService.getCommonWords();
 
-        if (!response.ok) {
+        if (!response) {
           throw new Error("Failed to fetch wrong answers");
         }
 
-        const results = await response.json();
-
-        const wrongAnswers = results.data.map(
+        const wrongAnswers = response.data.map(
           (data: any) => data.senses[0].english_definitions[0]
         );
 

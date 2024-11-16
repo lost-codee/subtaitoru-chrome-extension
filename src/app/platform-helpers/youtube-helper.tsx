@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// components
-import { SubtitlesPopup } from "../components/subtitles-popup";
+// Components
+import { SubtitlesPopup } from "../../components/subtitles-popup";
 
-// utils
-import { tokenizeJapaneseText } from "../utils/tokenize-japanese-text";
+// Utils
+import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
 
-export const AmazonPrimeHelper: React.FC<{
+export const YoutubeHelper: React.FC<{
   videoElement: HTMLVideoElement;
 }> = React.memo(({ videoElement }) => {
   const [subtitles, setSubtitles] = useState<string[] | null>(null);
@@ -24,10 +24,9 @@ export const AmazonPrimeHelper: React.FC<{
   }, []);
 
   const init = (observer: MutationObserver) => {
-    waitForElement(".atvwebplayersdk-captions-overlay").then(() => {
-      const container = document.querySelector(
-        ".atvwebplayersdk-captions-overlay"
-      );
+    waitForElement(".ytp-caption-window-container").then(() => {
+      const container = document.querySelector(".ytp-caption-window-container");
+
       if (container) {
         observer.observe(container, {
           childList: true,
@@ -60,9 +59,9 @@ export const AmazonPrimeHelper: React.FC<{
 
   const handleCaptionChanges = (mutations: MutationRecord[]) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === "childList" || mutation.type === "characterData") {
+      if (mutation.type === "childList") {
         const captionElements = document.querySelectorAll(
-          ".atvwebplayersdk-captions-text"
+          ".ytp-caption-segment"
         );
         if (captionElements.length === 0) {
           setSubtitles(null);
@@ -74,6 +73,8 @@ export const AmazonPrimeHelper: React.FC<{
   };
 
   const processCaptionElement = (element: Element) => {
+    if (element.hasAttribute("data-processed")) return;
+
     const text = element.textContent || "";
 
     if (text.length === 0) {
@@ -82,8 +83,12 @@ export const AmazonPrimeHelper: React.FC<{
     }
 
     // Hide the original captions
-    const captionElement = element as HTMLDivElement;
-    captionElement.style.visibility = "hidden";
+    const containerElement = document.querySelector(
+      ".ytp-caption-window-container"
+    ) as HTMLDivElement;
+    if (containerElement) {
+      containerElement.style.visibility = "hidden";
+    }
 
     // Tokenize the caption text
     const tokens = tokenizeJapaneseText(text);

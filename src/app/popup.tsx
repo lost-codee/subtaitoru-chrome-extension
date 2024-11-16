@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
 // Utils
-import { parseVTT } from "./utils/parse-vtt";
-import { cn } from "./utils/cn";
+import { parseVTT } from "../utils/parse-vtt";
+import { cn } from "../utils/cn";
 
 // Constants
-import { DEFAULT_FONT_SIZE } from "./constants";
+import { DEFAULT_FONT_SIZE } from "../lib/constants";
 
-// Style
-import "./index.css";
+// Styles
+import "./styles/index.css";
 
 const Popup = () => {
   const [showSubtitles, setShowSubtitles] = useState(false);
@@ -137,7 +137,7 @@ const Popup = () => {
       <header className="flex items-center mb-6 justify-between">
         <a
           className="flex items-center"
-          href="https://subtaitoru-web.vercel.app"
+          href="https://subtaitoru.site"
           target="_blank"
         >
           <div
@@ -306,7 +306,7 @@ const Popup = () => {
 
       <footer className="flex justify-between text-sm text-gray-600">
         <a
-          href="https://subtaitoru-web.vercel.app/"
+          href="https://subtaitoru.site/"
           target="_blank"
           className="hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
         >
@@ -314,7 +314,7 @@ const Popup = () => {
         </a>
         <a
           target="_blank"
-          href="https://subtaitoru-web.vercel.app/privacy-policy"
+          href="https://subtaitoru.site/privacy-policy"
           className="hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
         >
           Privacy Policy

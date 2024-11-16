@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import * as wanakana from "wanakana";
 
-// components
-import { Loading } from "./loading";
+// Components
+import { Loading } from "./ui/loading";
 
 // Models
 import { TranslationPopup } from "./translation-popup";
 import { Word } from "../types";
 
-// utils
+// Utils
 import { cn } from "../utils/cn";
+import { translationService } from "../services/api";
 
 export interface SubtitleOverlayProps {
   subtitles: string[] | null | undefined;
@@ -44,10 +45,7 @@ const getWordFromStorage = (word: string): Promise<ClickedWord | null> => {
 // Fetch translation data from API
 const fetchWordTranslation = async (word: string): Promise<Word | null> => {
   try {
-    const response = await fetch(
-      `${process.env.TRANSLATION_API_URL}?keyword=${word}`
-    );
-    const apiResponse = await response.json();
+    const apiResponse = await translationService.getWordTranslation(word);
     if (apiResponse && apiResponse.data && apiResponse.data.length > 0) {
       const data = apiResponse.data[0];
       const wordInfo: Word = {

@@ -7,8 +7,8 @@ function timeToSeconds(time: string) {
 }
 
 // Components
-import { SubtitlesPopup } from "../components/subtitles-popup";
-import { ParsedSubtitles } from "../utils/parse-vtt";
+import { SubtitlesPopup } from "../../components/subtitles-popup";
+import { ParsedSubtitles } from "../../utils/parse-vtt";
 
 export const ManuallyUploadHelper: React.FC = () => {
   const [showSubtitles, setShowSubtitles] = useState(false);
