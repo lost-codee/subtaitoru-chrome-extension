@@ -1,99 +1,53 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
 // Utils
-import { parseVTT } from "../utils/parse-vtt";
 import { cn } from "../utils/cn";
 
 // Constants
 import { DEFAULT_FONT_SIZE } from "../lib/constants";
+import { Settings } from "../types";
 
 // Styles
 import "./styles/index.css";
 
 const Popup = () => {
-  const [showSubtitles, setShowSubtitles] = useState(false);
-  const [color, setColor] = useState("#383838");
-  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileName, setFileName] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [settings, setSettings] = useState<Settings>({
+    fontSize: DEFAULT_FONT_SIZE,
+    fontColor: "#383838",
+    showSubtitles: false,
+  });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setSelectedFile(event.target.files[0]);
-      setFileName(event.target.files[0].name);
-      const file = event.target.files[0];
+  const updateSettings = (
+    key: keyof Settings,
+    value: Settings[keyof Settings]
+  ) => {
+    setSettings((prevSettings) => {
+      const settings = {
+        ...prevSettings,
+        [key]: value,
+      };
 
-      if (file) {
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-          const subtitleContent = e.target?.result;
-
-          if (!subtitleContent) {
-            return;
-          }
-
-          chrome.storage.local.set(
-            {
-              subtitle: {
-                fileName: file.name,
-                content: parseVTT(subtitleContent.toString()),
-              },
-            },
-            function () {
-              console.log("Content uploaded: ", subtitleContent);
-            }
-          );
-        };
-
-        reader.readAsText(file);
-      }
-    }
-  };
-
-  const handleSendSettings = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.runtime.sendMessage({
-        type: "settingsChanged",
-        tab: tabs[0].id,
-        url: tabs[0].url,
-        color,
-        fontSize,
-        showSubtitles,
+      chrome.storage.local.set({
+        settings,
       });
+
+      return settings;
     });
   };
 
   const handleFontSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setFontSize(event.target.value);
-    chrome.storage.local.set({
-      fontSize: event.target.value,
-    });
-    handleSendSettings();
+    updateSettings("fontSize", event.target.value);
   };
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setColor(event.target.value);
-    chrome.storage.local.set({
-      fontColor: event.target.value,
-    });
-    handleSendSettings();
+    updateSettings("fontColor", event.target.value);
   };
 
   const handleShowSubtitlesChange = (showSubtitles: boolean) => {
-    setShowSubtitles(showSubtitles);
-    chrome.storage.local.set({
-      showSubtitles,
-    });
-    handleSendSettings();
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+    updateSettings("showSubtitles", showSubtitles);
   };
 
   const handleQuizClick = () => {
@@ -113,24 +67,14 @@ const Popup = () => {
   };
 
   useEffect(() => {
-    chrome.storage.local.get(
-      ["fontSize", "fontColor", "showSubtitles", "subtitle"],
-      (result) => {
-        if (result.fontSize) {
-          setFontSize(result.fontSize);
-        }
-        if (result.fontColor) {
-          setColor(result.fontColor);
-        }
-        if (result.showSubtitles) {
-          setShowSubtitles(result.showSubtitles);
-        }
-        if (result.subtitle) {
-          setFileName(result.subtitle.fileName);
-        }
+    chrome.storage.local.get(["settings"], (result) => {
+      if (result.settings) {
+        setSettings(result.settings);
       }
-    );
+    });
   }, []);
+
+  const { showSubtitles, fontSize, fontColor } = settings;
 
   return (
     <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
@@ -150,53 +94,26 @@ const Popup = () => {
         </a>
         <button
           type="button"
-          className="text-gray-800 font-semibold"
-          onClick={() => handleSendSettings()}
-          aria-label="Refresh"
+          role="switch"
+          aria-checked={showSubtitles}
+          aria-labelledby="show-subtitles-label"
+          onClick={() => handleShowSubtitlesChange(!showSubtitles)}
+          className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+            showSubtitles ? "bg-indigo-600" : "bg-gray-200"
+          }`}
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
+          <span className="sr-only">
+            {showSubtitles ? "Turn off subtitles" : "Turn on subtitles"}
+          </span>
+          <span
+            className={`${
+              showSubtitles ? "translate-x-6" : "translate-x-1"
+            } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+            aria-hidden="true"
+          />
         </button>
       </header>
       <main>
-        {/* <div className="mb-6">
-          <label htmlFor="file-upload" className="flex space-x-2 mb-2 ">
-            <span>Upload file</span>
-            {fileName ? <strong>{fileName}</strong> : ""}
-          </label>
-          <input
-            ref={fileInputRef}
-            id="file-upload"
-            type="file"
-            accept=".vtt,.srt"
-            onChange={handleFileChange}
-            className="hidden"
-            aria-label="Upload subtitle file"
-          />
-          <button
-            onClick={handleUploadClick}
-            className={cn(
-              "w-full focus:ring-2 focus:ring-offset-2  text-white font-semibold py-2 px-4 rounded transition duration-300 ease-in-out",
-              fileName
-                ? "bg-[#1F2937] hover:bg-[#2d3a4d]"
-                : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-            )}
-          >
-            {fileName ? "Choose a file" : "Upload a new file"}
-          </button>
-        </div> */}
         <section aria-labelledby="quiz-title" className="mb-6">
           <h2
             id="quiz-title"
@@ -260,50 +177,21 @@ const Popup = () => {
                 <input
                   id="subtitle-color"
                   type="color"
-                  value={color}
+                  value={fontColor}
                   onChange={handleColorChange}
                   className="w-12 h-8 p-1 bg-white border border-gray-300 rounded"
                 />
                 <input
                   type="text"
-                  value={color}
+                  value={fontColor}
                   onChange={handleColorChange}
                   className="flex-grow bg-white border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between space-y-4 ">
-              <label
-                className="text-sm font-medium mb-1"
-                id="show-subtitles-label"
-              >
-                Enable subtitles
-              </label>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showSubtitles}
-                aria-labelledby="show-subtitles-label"
-                onClick={() => handleShowSubtitlesChange(!showSubtitles)}
-                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                  showSubtitles ? "bg-indigo-600" : "bg-gray-200"
-                }`}
-              >
-                <span className="sr-only">
-                  {showSubtitles ? "Turn off subtitles" : "Turn on subtitles"}
-                </span>
-                <span
-                  className={`${
-                    showSubtitles ? "translate-x-6" : "translate-x-1"
-                  } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
           </div>
         </section>
       </main>
-
       <footer className="flex justify-between text-sm text-gray-600">
         <a
           href="https://subtaitoru.site/"

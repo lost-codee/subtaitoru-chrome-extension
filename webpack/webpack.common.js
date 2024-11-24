@@ -14,7 +14,6 @@ module.exports = {
     profile: path.join(appDir, "pages/profile.tsx"),
     youtube: path.join(contentScriptDir, "youtube_content_script.tsx"),
     amazon: path.join(contentScriptDir, "amazon_content_script.tsx"),
-    manual: path.join(contentScriptDir, "manual_content_script.tsx"),
     quiz: path.join(contentScriptDir, "quiz_content_script.tsx"),
   },
   output: {
@@ -66,6 +65,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
+    fallback: {
+      path: require.resolve("path-browserify"),
+    },
   },
   plugins: [
     new CopyPlugin({

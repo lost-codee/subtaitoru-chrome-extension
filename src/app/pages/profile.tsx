@@ -1,48 +1,58 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 
+import { localStorageService } from "../../services/local-storage";
+
 // Models
-import { ClickedWord } from "../../components/subtitles-box";
+import { SavedWords } from "../../types";
 
 // Style
 import "../styles/index.css";
 
-const ManageLearnings: React.FC = () => {
-  const [learnedWords, setLearnedWords] = useState<ClickedWord[]>([]);
+const ProfilePage: React.FC = () => {
+  const [learnedWords, setLearnedWords] = useState<SavedWords[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // Fetch learned words from Chrome storage
   useEffect(() => {
-    chrome.storage.local.get(["clickedWords"], (result) => {
-      if (result.clickedWords) {
-        setLearnedWords(result.clickedWords);
-      }
+    localStorageService.getAllWordsFromStorage().then((words) => {
+      console.log({ words });
+      setLearnedWords(words);
     });
   }, []);
 
-  // Remove word from learned words
-  const removeWord = (wordToRemove: string) => {
-    const updatedWords = learnedWords.filter(
-      (word) => word.word !== wordToRemove
-    );
-    chrome.storage.local.set({ clickedWords: updatedWords }, () => {
-      setLearnedWords(updatedWords);
-    });
-  };
+  const handleRemoveWord = (wordToRemove: string) =>
+    localStorageService.deleteWordFromStorage(wordToRemove);
 
   const handleRemoveAll = () => {
-    chrome.storage.local.set({ clickedWords: [] }, () => {
-      setLearnedWords([]);
-    });
+    localStorageService.deleteAllWordsFromStorage();
+    setLearnedWords([]);
   };
 
-  // Sort words based on selected option (not implemented in this example)
-  const sortWords = (words: ClickedWord[]) => {
-    // Add sorting logic here if needed
-    return words;
-  };
+  if (learnedWords.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center p-8">
+        <header className="w-full max-w-4xl bg-white shadow rounded p-6 mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img
+              src="/icon.png"
+              alt="User Avatar"
+              className="w-12 h-12 rounded-full"
+            />
+            <div>
+              <h2 className="text-xl font-semibold">Welcome!</h2>
+              <p className="text-sm text-gray-500">
+                Manage your learned words here
+              </p>
+            </div>
+          </div>
+        </header>
+        <div className="w-full max-w-4xl bg-white shadow rounded p-6">
+          <p className="text-sm text-gray-500">No words found.</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Filter words based on search term
   const filteredWords = learnedWords.filter(
     (word) =>
       word.word && word.word.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,7 +60,6 @@ const ManageLearnings: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center p-8">
-      {/* User Profile Section */}
       <header className="w-full max-w-4xl bg-white shadow rounded p-6 mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <img
@@ -75,10 +84,8 @@ const ManageLearnings: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Section */}
       <div className="w-full max-w-4xl bg-white shadow rounded p-6">
         <div className="flex items-center justify-between mb-4">
-          {/* Search Input */}
           <input
             type="text"
             className="border border-gray-300 p-2 rounded shadow-sm w-1/2"
@@ -88,12 +95,11 @@ const ManageLearnings: React.FC = () => {
           />
         </div>
 
-        {/* Learned Words List */}
         {filteredWords.length === 0 ? (
           <p className="text-center text-gray-500">No learned words yet!</p>
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sortWords(filteredWords).map((word, index) => (
+            {filteredWords.map((word, index) => (
               <li
                 key={index}
                 className="bg-gray-50 p-4 rounded shadow-sm flex justify-between items-center"
@@ -112,7 +118,7 @@ const ManageLearnings: React.FC = () => {
                 </div>
                 <button
                   className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded "
-                  onClick={() => removeWord(word.word)}
+                  onClick={() => handleRemoveWord(word.word)}
                 >
                   <svg
                     className="h-4 w-4"
@@ -140,9 +146,9 @@ const ManageLearnings: React.FC = () => {
 
 ReactDOM.render(
   <React.StrictMode>
-    <ManageLearnings />
+    <ProfilePage />
   </React.StrictMode>,
   document.getElementById("root")
 );
 
-export default ManageLearnings;
+export default ProfilePage;
