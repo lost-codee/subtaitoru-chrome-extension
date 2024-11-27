@@ -1,4 +1,4 @@
-import { useState, useCallback, RefObject } from "react";
+import { useState, useCallback, RefObject, useEffect } from "react";
 import * as wanakana from "wanakana";
 import { Word } from "../types";
 import { localStorageService } from "../services/local-storage";
@@ -16,7 +16,7 @@ interface PopupState {
   isCached: boolean;
 }
 
-export const useTranslationPopup = ({
+export const useSubtitles = ({
   videoElement,
   isMounted,
 }: UseTranslationPopupProps) => {
@@ -100,6 +100,20 @@ export const useTranslationPopup = ({
       wordDetails: null,
     }));
   }, [isMounted]);
+
+  // if video is playing, close popup
+  useEffect(() => {
+    if (!isMounted.current) return;
+    const handleTimeUpdate = () => {
+      if (videoElement.currentTime > 0) {
+        closePopup();
+      }
+    };
+    videoElement.addEventListener("timeupdate", handleTimeUpdate);
+    return () => {
+      videoElement.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, [videoElement, closePopup, isMounted]);
 
   return {
     popupState,

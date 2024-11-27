@@ -17,7 +17,7 @@ interface WordProps {
 const Word: React.FC<WordProps> = React.memo(({ word, onWordClick }) => (
   <span
     className="inline-block cursor-pointer px-[4px] rounded transition-colors duration-300 ease-in-out hover:bg-white hover:bg-opacity-20"
-    onClick={(event) => {
+    onClick={(event: React.MouseEvent) => {
       event.stopPropagation();
       onWordClick(word);
     }}
@@ -42,15 +42,11 @@ export const Subtitles = React.memo(function Subtitles({
     }
   }, [videoElement]);
 
-  if (!subtitles?.length) {
-    return null;
-  }
-
   return (
     <div
       onMouseEnter={handleMouseEnter}
       className={cn(
-        "bg-zinc-900/95 p-[12px] rounded-lg shadow-md leading-normal flex flex-col cursor-move",
+        "bg-zinc-900/95 p-[8px] rounded-lg shadow-md flex flex-col cursor-move",
         subtitles ? "" : "hidden"
       )}
       style={{
@@ -58,8 +54,8 @@ export const Subtitles = React.memo(function Subtitles({
         color: storageContext.settings.fontColor,
       }}
     >
-      <div>
-        {subtitles.map((word, index) => (
+      <div className="text-center">
+        {subtitles?.map((word, index) => (
           <Word key={index} word={word} onWordClick={onWordClick} />
         ))}
       </div>

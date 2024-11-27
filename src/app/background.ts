@@ -22,10 +22,15 @@ const injectPlatformScripts = (tabId: number, platform: string) => {
 
 // Main script injection logic
 const injectScripts = async (tabId: number, url: string) => {
-  const platform = getPlatform(url);
-  if (!platform) return;
+  // check if storage has show subtitles enabled
+  chrome.storage.local.get(["settings"], (result) => {
+    if (!result?.settings?.showSubtitles) return;
 
-  injectPlatformScripts(tabId, platform);
+    const platform = getPlatform(url);
+    if (!platform) return;
+
+    injectPlatformScripts(tabId, platform);
+  });
 };
 
 // Handle tab updates

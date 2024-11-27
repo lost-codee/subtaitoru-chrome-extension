@@ -1,10 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Subtitles } from "./subtitles";
 import { Loading } from "./ui/loading";
 import { TranslationPopup } from "./translation-popup";
-import { useSubtitleState } from "../hooks/use-subtitle-state";
-import { useDragToMove } from "../hooks/use-drag-to-move";
-import { useTranslationPopup } from "../hooks/use-translation-popup";
+import { useSubtitles } from "../hooks/use-subtitles";
 
 interface SubtitlesWrapperProps {
   subtitles: string[] | null;
@@ -29,33 +27,56 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   dualSubtitles,
   videoElement,
 }) => {
+  const isMounted = useRef(true);
   const subtitleWrapperRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ bottom: number }>({
-    bottom: 48,
+    bottom: 64,
   });
-  const { isMounted, showSubtitles } = useSubtitleState();
-  const { popupState, fetchWordDetails, closePopup } = useTranslationPopup({
+  const { popupState, fetchWordDetails, closePopup } = useSubtitles({
     videoElement,
     isMounted,
   });
 
-  const updatePosition = (newPosition: { bottom: number }) => {
-    if (!isMounted.current) return;
-    setPosition(newPosition);
-  };
+  useEffect(() => {
+    const handleMouseDown = (event: MouseEvent) => {
+      if (subtitleWrapperRef.current) {
+        const rect = subtitleWrapperRef.current.getBoundingClientRect();
+        const initialY = event.clientY;
+        const initialBottom = window.innerHeight - rect.bottom;
 
-  // Setup drag-to-move functionality
-  useDragToMove({
-    elementRef: subtitleWrapperRef,
-    isMounted,
-    onPositionChange: updatePosition,
-  });
+        const handleMouseMove = (event: MouseEvent) => {
+          if (subtitleWrapperRef.current) {
+            const newBottom = initialBottom - (event.clientY - initialY);
+            setPosition({ bottom: newBottom });
+            subtitleWrapperRef.current.style.bottom = `${newBottom}px`;
+          }
+        };
+
+        const handleMouseUp = () => {
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+        };
+
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+      }
+    };
+
+    if (subtitleWrapperRef.current) {
+      subtitleWrapperRef.current.addEventListener("mousedown", handleMouseDown);
+    }
+
+    return () => {
+      if (subtitleWrapperRef.current) {
+        subtitleWrapperRef.current.removeEventListener(
+          "mousedown",
+          handleMouseDown
+        );
+      }
+    };
+  }, [subtitleWrapperRef]);
 
   if (!isMounted.current) {
-    return null;
-  }
-
-  if (!showSubtitles) {
     return null;
   }
 
@@ -68,7 +89,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   return (
     <div
       ref={subtitleWrapperRef}
-      className="flex flex-col items-center p-4 pointer-events-auto justify-end z-[999] absolute gap-4"
+      className="flex flex-col items-center p-4 pointer-events-auto justify-end z-[999] absolute gap-4 w-full max-w-4xl"
       style={wrapperStyle}
     >
       {popupState.isVisible && popupState.wordDetails && (

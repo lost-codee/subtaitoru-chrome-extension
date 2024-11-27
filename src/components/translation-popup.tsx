@@ -128,7 +128,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
       <div className="flex items-center justify-between p-4 text-sm text-zinc-400">
         <div className="flex items-center gap-[16px]">
           <a
-            className="flex items-center gap-[8px] hover:text-white transition-colors"
+            className="flex items-center gap-[8px] text-[14px] hover:text-white transition-colors"
             href={jishoUrl}
             target="_blank"
           >
@@ -149,7 +149,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
             Detail
           </a>
           <button
-            className="hover:text-white transition-colors flex items-center gap-[8px]"
+            className="hover:text-white text-[14px] transition-colors flex items-center gap-[8px]"
             aria-label="Save word"
             onClick={isSaved ? handleUnSave : handleSave}
           >

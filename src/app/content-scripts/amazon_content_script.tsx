@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect, memo } from "react";
 import ReactDOM from "react-dom";
 
 // Components
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
-import { BaseContentScript } from "./base-content-script";
+import { BaseContentScriptProvider } from "./base-content-script";
 
 // Utils
 import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
@@ -94,14 +94,23 @@ const AmazonPrimeSubtitles = memo(
 
       return () => {
         // Clean up the observers on unmount
-
         captionObserver.disconnect();
+        // Make subtitles visible again
+        const captionElements = document.querySelectorAll(
+          ".atvwebplayersdk-captions-text"
+        );
+        captionElements.forEach((element) => {
+          const captionElement = element as HTMLDivElement;
+          captionElement.style.visibility = "visible";
+        });
+
+        setSubtitles(null);
       };
     }, []);
 
-    return subtitles ? (
+    return (
       <SubtitlesWrapper subtitles={subtitles} videoElement={videoElement!} />
-    ) : null;
+    );
   }
 );
 
@@ -115,9 +124,9 @@ const renderSubtitles = (videoElement: HTMLVideoElement) => {
 
   ReactDOM.render(
     <React.StrictMode>
-      <BaseContentScript>
+      <BaseContentScriptProvider>
         <AmazonPrimeSubtitles videoElement={videoElement} />
-      </BaseContentScript>
+      </BaseContentScriptProvider>
     </React.StrictMode>,
     shadowRoot
   );
