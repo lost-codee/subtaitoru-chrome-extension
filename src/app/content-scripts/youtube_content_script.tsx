@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 
 // Components
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
 import { Loading } from "../../components/ui/loading";
-import { createShadowContainer } from "../../utils/create-shadow-container";
-import { BaseContentScriptProvider } from "./base-content-script";
+import { VideoControls } from "../../components/video-controls";
+import { StorageProvider } from "../../context/storage-context";
 
 // Utils
 import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
+import { createShadowContainer } from "../../utils/create-shadow-container";
 
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
@@ -25,12 +26,12 @@ interface YoutubeCaptionsToknize {
   text: string[];
 }
 
-const YoutubeSubtitles: React.FC<{
-  videoElement: HTMLVideoElement;
-}> = React.memo(({ videoElement }) => {
+const YoutubeSubtitles = React.memo(({ videoElement }: { videoElement: HTMLVideoElement }) => {
   const [captions, setCaptions] = useState<YoutubeCaptionsToknize[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [subtitles, setSubtitles] = useState<string[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
 
   // Helper to fetch YouTube metadata and captions
   const fetchCaptions = async (videoId: string) => {
@@ -137,7 +138,7 @@ const YoutubeSubtitles: React.FC<{
 
       setCaptions(tokenizeCaptions);
     } catch (error) {
-      console.error("Error fetching captions:", error);
+      setError("Error fetching captions: " + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +202,7 @@ const YoutubeSubtitles: React.FC<{
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center p-4 pointer-events-auto justify-end z-[999] absolute h-full w-full">
+      <div className="flex flex-col items-center p-4 justify-end z-[999] absolute h-full w-full bottom-12">
         <div className="bg-white text-black p-[8px] rounded-md text-center mb-[8px] animate-[fadeIn]">
           <div className="flex items-center justify-center text-[14px]">
             <span>Fetching Captions</span>
@@ -212,22 +213,53 @@ const YoutubeSubtitles: React.FC<{
     );
   }
 
-  return <SubtitlesWrapper subtitles={subtitles} videoElement={videoElement} />;
-});
-
-const init = () => {
-  if (document.getElementById(SUBTAITORU_ROOT_ID)) {
-    return;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center p-4 justify-end z-[999] absolute h-full w-full bottom-12">
+        <div className="bg-white text-black p-[8px] rounded-md text-center mb-[8px] animate-[fadeIn]">
+          <div className="flex items-center justify-center text-[14px]">
+            <span>{error}</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const container = document.getElementById("ytp-caption-window-container");
+  return (
+    <>
+      <VideoControls
+        onOffsetChange={setSubtitleOffset}
+        currentOffset={subtitleOffset}
+      />
+      <SubtitlesWrapper subtitles={subtitles} videoElement={videoElement} />
+    </>
+  );
+});
 
-  if (!container) {
+const renderSubtitles = (videoElement: HTMLVideoElement[], container: HTMLElement) => {
+  if (document.getElementById(SUBTAITORU_ROOT_ID)) {
     return;
   }
 
   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
   container.appendChild(shadowRoot.host);
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <StorageProvider>
+        <YoutubeSubtitles videoElement={videoElement[0]} />
+      </StorageProvider>
+    </React.StrictMode>,
+    shadowRoot
+  );
+};
+
+const init = () => {
+  const container = document.getElementById("ytp-caption-window-container");
+
+  if (!container) {
+    return;
+  }
 
   const videoElement = document.getElementsByClassName(
     "video-stream html5-main-video"
@@ -237,14 +269,7 @@ const init = () => {
     return;
   }
 
-  ReactDOM.render(
-    <React.StrictMode>
-      <BaseContentScriptProvider>
-        <YoutubeSubtitles videoElement={videoElement[0] as HTMLVideoElement} />
-      </BaseContentScriptProvider>
-    </React.StrictMode>,
-    shadowRoot
-  );
+  renderSubtitles(videoElement as unknown as HTMLVideoElement[], container);
 };
 
 init();

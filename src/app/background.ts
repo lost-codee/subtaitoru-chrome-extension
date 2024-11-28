@@ -22,15 +22,10 @@ const injectPlatformScripts = (tabId: number, platform: string) => {
 
 // Main script injection logic
 const injectScripts = async (tabId: number, url: string) => {
-  // check if storage has show subtitles enabled
-  chrome.storage.local.get(["settings"], (result) => {
-    if (!result?.settings?.showSubtitles) return;
-
     const platform = getPlatform(url);
     if (!platform) return;
 
     injectPlatformScripts(tabId, platform);
-  });
 };
 
 // Handle tab updates
@@ -48,5 +43,132 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   const tab = await chrome.tabs.get(activeInfo.tabId);
   if (tab.url) {
     injectScripts(activeInfo.tabId, tab.url);
+  }
+});
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'DOWNLOAD_SUBTITLE') {
+    (async () => {
+      try {
+        const response = await fetch(message.url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Get the response as an ArrayBuffer
+        const buffer = await response.arrayBuffer();
+        
+        // Convert ArrayBuffer to array for message passing
+        const uint8Array = new Uint8Array(buffer);
+        const array = Array.from(uint8Array);
+        
+        sendResponse({
+          success: true,
+          data: array
+        });
+      } catch (error) {
+        console.error('Error downloading subtitle:', error);
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    })();
+    
+    // Return true to indicate we will send response asynchronously
+    return true;
+  }
+
+  if (message.type === 'SEARCH_KITSUNEKKO') {
+    (async () => {
+      try {
+        const response = await fetch(`https://kitsunekko.net/dirlist.php?dir=subtitles%2Fjapanese%2F${encodeURIComponent(message.query)}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        sendResponse({
+          success: true,
+          data: text
+        });
+      } catch (error) {
+        console.error('Error searching Kitsunekko:', error);
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === 'SEARCH_DADDICTS') {
+    (async () => {
+      try {
+        const response = await fetch(`https://d-addicts.com/forums/search.php?keywords=${encodeURIComponent(message.query)}+japanese+subtitles`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        sendResponse({
+          success: true,
+          data: text
+        });
+      } catch (error) {
+        console.error('Error searching D-Addicts:', error);
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === 'TRANSLATE') {
+    (async () => {
+      try {
+        // Get API key from storage
+        chrome.storage.local.get(['deeplApiKey'], async (result) => {
+          const apiKey = result.deeplApiKey || 'b32ece32-cd2a-40a5-a372-c9c0bfbe465e:fx'; // Fallback to default key
+          
+          try {
+            const response = await fetch('https://api-free.deepl.com/v2/translate', {
+              method: 'POST',
+              headers: {
+                'Authorization': `DeepL-Auth-Key ${apiKey}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({
+                text: message.text,
+                target_lang: 'EN',
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            sendResponse({ success: true, data });
+          } catch (error: unknown) {
+            console.error('Translation error:', error);
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+          }
+        });
+
+        return true; // Will respond asynchronously
+      } catch (error) {
+        console.error('Error translating text:', error);
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    })();
+    return true;
   }
 });

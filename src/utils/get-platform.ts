@@ -6,7 +6,7 @@ const HOSTNAMES = {
   NETFLIX: ["netflix.com"],
 };
 
-const AMAZON_VIDEO_PATH = "/video";
+const AMAZON_VIDEO_PATH = "/video/detail";
 const YOUTUBE_VIDEO_PATH = "/watch";
 
 /**

@@ -23,12 +23,28 @@
     }
   ],
 
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
 
   "host_permissions": [
+    "*://*.amazon.co.uk/*",
+    "*://*.amazon.com/*",
+    "*://*.amazon.de/*",
+    "*://*.amazon.fr/*",
+    "*://*.amazon.it/*",
+    "*://*.amazon.es/*",
+    "*://*.amazon.ca/*",
+    "*://*.amazon.cn/*",
+    "*://*.amazon.in/*",
     "*://*.amazon.co.jp/*",
     "*://*.youtube.com/*",
-    "*://*.netflix.com/*"
+    "*://*.netflix.com/*",
+    "*://*.kitsunekko.net/*",
+    "*://*.d-addicts.com/*",
+    "*://*.deepl.com/*"
   ],
 
   "background": {

@@ -1,6 +1,7 @@
 import React, { useCallback, useContext } from "react";
 import { cn } from "../utils/cn";
-import { StorageContext } from "../providers/storage-provider";
+import { useStorage } from "../context/storage-context";
+
 
 export interface SubtitlesProps {
   subtitles?: string[] | null;
@@ -16,7 +17,7 @@ interface WordProps {
 
 const Word: React.FC<WordProps> = React.memo(({ word, onWordClick }) => (
   <span
-    className="inline-block cursor-pointer px-[4px] rounded transition-colors duration-300 ease-in-out hover:bg-white hover:bg-opacity-20"
+    className="inline-block cursor-pointer px-[4px] rounded transition-colors hover:bg-zinc-800"
     onClick={(event: React.MouseEvent) => {
       event.stopPropagation();
       onWordClick(word);
@@ -34,7 +35,7 @@ export const Subtitles = React.memo(function Subtitles({
   videoElement,
   onWordClick,
 }: SubtitlesProps) {
-  const storageContext = useContext(StorageContext);
+  const { settings } = useStorage();
 
   const handleMouseEnter = useCallback(() => {
     if (videoElement) {
@@ -46,15 +47,15 @@ export const Subtitles = React.memo(function Subtitles({
     <div
       onMouseEnter={handleMouseEnter}
       className={cn(
-        "bg-zinc-900/95 p-[8px] rounded-lg shadow-md flex flex-col cursor-move",
+        "bg-zinc-900/95 p-[12px] rounded-lg shadow-md flex flex-col cursor-move",
         subtitles ? "" : "hidden"
       )}
       style={{
-        fontSize: storageContext.settings.fontSize,
-        color: storageContext.settings.fontColor,
+        fontSize:settings.fontSize,
+        color:settings.fontColor,
       }}
     >
-      <div className="text-center">
+      <div className="text-center leading-normal">
         {subtitles?.map((word, index) => (
           <Word key={index} word={word} onWordClick={onWordClick} />
         ))}

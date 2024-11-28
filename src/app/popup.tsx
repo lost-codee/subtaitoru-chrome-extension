@@ -36,16 +36,7 @@ const Popup = () => {
     });
   };
 
-  const handleFontSizeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    updateSettings("fontSize", event.target.value);
-  };
-
-  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    updateSettings("fontColor", event.target.value);
-  };
-
+  
   const handleShowSubtitlesChange = (showSubtitles: boolean) => {
     updateSettings("showSubtitles", showSubtitles);
   };
@@ -142,53 +133,6 @@ const Popup = () => {
             >
               Manage words
             </button>
-          </div>
-        </section>
-
-        <section className="mb-6" aria-labelledby="settings-heading">
-          <h2 id="settings-heading" className="text-lg font-semibold mb-2">
-            Settings
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="font-size"
-                className="block text-sm font-medium mb-1"
-              >
-                Font-size
-              </label>
-              <select
-                id="font-size"
-                value={fontSize}
-                onChange={handleFontSizeChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="16px">16px</option>
-                <option value="24px">24px</option>
-                <option value="32px">32px</option>
-                <option value="40px">40px</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="color" className="block text-sm font-medium mb-1">
-                Color
-              </label>
-              <div className="flex items-center space-x-2">
-                <input
-                  id="subtitle-color"
-                  type="color"
-                  value={fontColor}
-                  onChange={handleColorChange}
-                  className="w-12 h-8 p-1 bg-white border border-gray-300 rounded"
-                />
-                <input
-                  type="text"
-                  value={fontColor}
-                  onChange={handleColorChange}
-                  className="flex-grow bg-white border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
           </div>
         </section>
       </main>

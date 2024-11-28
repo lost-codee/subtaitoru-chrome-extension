@@ -30,7 +30,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   const isMounted = useRef(true);
   const subtitleWrapperRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ bottom: number }>({
-    bottom: 64,
+    bottom: 48,
   });
   const { popupState, fetchWordDetails, closePopup } = useSubtitles({
     videoElement,
@@ -89,7 +89,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   return (
     <div
       ref={subtitleWrapperRef}
-      className="flex flex-col items-center p-4 pointer-events-auto justify-end z-[999] absolute gap-4 w-full max-w-4xl"
+      className="flex flex-col items-center p-[16px] pointer-events-auto justify-end z-[999] absolute gap-4 w-full max-w-[800px]"
       style={wrapperStyle}
     >
       {popupState.isVisible && popupState.wordDetails && (
