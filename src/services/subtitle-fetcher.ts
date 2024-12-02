@@ -56,10 +56,6 @@ export class SubtitleFetcher {
     const subtitleEpisodeMatch = subtitleTitle.match(/(?:[-\s]|^)(\d+)(?:\s|$|\u3010|\u300C)/);
     const subtitleEpisodeNum = subtitleEpisodeMatch ? parseInt(subtitleEpisodeMatch[1]) : null;
 
-    console.log('Subtitle title:', subtitleTitle);
-    console.log('subtitleEpisodeMatch:', subtitleEpisodeMatch);
-    console.log('subtitleEpisodeNum:', subtitleEpisodeNum);
-
     // Base confidence on title match
     if (normalizedSubtitleTitle.includes(normalizedSearchTitle)) {
       confidence += 0.4;
@@ -98,7 +94,7 @@ export class SubtitleFetcher {
 
   static async searchSubtitles(params: SearchParams): Promise<SubtitleResult[]> {
     try {
-      console.log('Searching subtitles for:', params);
+    
 
       const queries: string[] = [];
       
@@ -123,8 +119,7 @@ export class SubtitleFetcher {
         queries.push(...episodeFormats);
       }
 
-      console.log('Queries:', queries);
-
+   
       let allResults: SubtitleResult[] = [];
 
       for (const query of queries) {
@@ -147,7 +142,7 @@ export class SubtitleFetcher {
         allResults.map(result => [result.url, result])
       ).values());
 
-      console.log('Unique results:', uniqueResults);
+    
 
       return uniqueResults
         .sort((a, b) => b.confidence - a.confidence)

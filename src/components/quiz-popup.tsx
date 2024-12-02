@@ -6,7 +6,7 @@ import { Loading } from "./ui/loading";
 // Models
 import { QuizData, SavedWords } from "../types";
 import { translationService } from "../services/api";
-import { localStorageService } from "../services/local-storage";
+import { LocalStorageService } from "../services/local-storage";
 
 // Types
 interface QuizPopupProps {
@@ -84,6 +84,7 @@ export const QuizPopup: React.FC<QuizPopupProps> = ({ onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [wrongAnswerPool, setWrongAnswerPool] = useState<string[]>([]);
   const [quizData, setQuizData] = useState<QuizData[]>([]);
+  const storageService = LocalStorageService.getInstance();
 
   const handleAnswerClick = useCallback(
     (answer: string) => {
@@ -120,7 +121,7 @@ export const QuizPopup: React.FC<QuizPopupProps> = ({ onClose }) => {
 
   const createQuizData = useCallback(async () => {
     try {
-      const savedWords = await localStorageService.getAllWordsFromStorage();
+      const savedWords = await storageService.getAllWords();
 
       if (savedWords.length > 0 && wrongAnswerPool.length > 0) {
         const selectedWords = savedWords

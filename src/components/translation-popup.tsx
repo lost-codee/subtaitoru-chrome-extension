@@ -1,7 +1,6 @@
 import React, { useState, useCallback, memo, useEffect } from "react";
 import { TranslationPopupProps } from "../types";
-import { localStorageService } from "../services/local-storage";
-import { logger } from "../services/logger";
+import { LocalStorageService } from "../services/local-storage";
 import { ErrorBoundary } from "./error-boundary";
 
 const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
@@ -11,6 +10,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
 }) => {
   const [isSaved, setSaved] = useState(isCached);
   const [error, setError] = useState<string | null>(null);
+  const storageService = LocalStorageService.getInstance();
 
   const jishoUrl = `https://jisho.org/search/${encodeURIComponent(word.word)}`;
 
@@ -21,7 +21,6 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
 
   const handleError = useCallback(
     (error: Error, context: string) => {
-      logger.error(error, { context, word: word.word });
       setError(`Failed to ${context}. Please try again.`);
       setTimeout(() => setError(null), 3000);
     },
@@ -32,7 +31,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       try {
-        localStorageService.saveWordToStorage({
+        storageService.saveWord({
           ...word,
           timestamp: Date.now(),
           confidence: 1,
@@ -49,7 +48,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       try {
-        localStorageService.removeWordFromStorage(word.word);
+        storageService.removeWord(word.word);
         setSaved(false);
       } catch (err) {
         handleError(err as Error, "remove word");

@@ -5,4 +5,3 @@ tmp/
 yarn.lock
 .env
 dist.zip
-create_pr.py

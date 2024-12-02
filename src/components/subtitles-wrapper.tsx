@@ -3,6 +3,7 @@ import { Subtitles } from "./subtitles";
 import { Loading } from "./ui/loading";
 import { TranslationPopup } from "./translation-popup";
 import { useSubtitles } from "../hooks/use-subtitles";
+import { useStorage } from "../context/storage-context";
 
 interface SubtitlesWrapperProps {
   subtitles: string[] | null;
@@ -27,6 +28,8 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   dualSubtitles,
   videoElement,
 }) => {
+
+  const storage = useStorage();
   const isMounted = useRef(true);
   const subtitleWrapperRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ bottom: number }>({
@@ -80,6 +83,11 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
     return null;
   }
 
+
+  if(storage.settings.showSubtitles === false) {
+    return null;
+  }
+  
   const wrapperStyle = {
     bottom: position.bottom,
     left: "50%",
@@ -91,6 +99,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
       ref={subtitleWrapperRef}
       className="flex flex-col items-center p-[16px] pointer-events-auto justify-end z-[999] absolute gap-4 w-full max-w-[800px]"
       style={wrapperStyle}
+      onClick={()=> videoElement.play()}
     >
       {popupState.isVisible && popupState.wordDetails && (
         <TranslationPopup

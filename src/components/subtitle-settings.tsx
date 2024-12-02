@@ -7,7 +7,7 @@ interface SubtitleSettingsProps {
   currentOffset: number;
 }
 
-type SettingsTab = 'timing' | 'style';
+type SettingsTab = 'timing' | 'style' | 'captions';
 
 export const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
   onOffsetChange,
@@ -76,9 +76,36 @@ export const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
         <div className="text-white">
           {/* Tabs */}
           <div className="flex gap-[8px] mb-[16px]">
+            <TabButton tab="captions" label="Captions" />
             <TabButton tab="timing" label="Timing" />
             <TabButton tab="style" label="Style" />
           </div>
+
+          {/* Captions Settings */}
+          {activeTab === 'captions' && (
+            <div className="space-y-[16px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] text-zinc-400">Enable Subtitles</span>
+                <button
+                  onClick={() => updateSettings({ showSubtitles: !settings.showSubtitles })}
+                  className={cn(
+                    "w-[40px] h-[24px] rounded-full relative transition-colors",
+                    settings.showSubtitles ? "bg-blue-500" : "bg-zinc-700"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform",
+                      settings.showSubtitles ? "left-[18px]" : "left-[2px]"
+                    )}
+                  />
+                </button>
+              </div>
+              <p className="text-[12px] text-zinc-500">
+                Toggle subtitles on/off for all supported video platforms
+              </p>
+            </div>
+          )}
 
           {/* Timing Settings */}
           {activeTab === 'timing' && (

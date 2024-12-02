@@ -1,52 +1,3 @@
-// Constants
-import { PLATFORMS } from "../lib/constants";
-
-// Utils
-import { getPlatform } from "../utils/get-platform";
-
-// Inject scripts for a specific platform
-const injectPlatformScripts = (tabId: number, platform: string) => {
-  const scriptFiles: Record<string, string[]> = {
-    [PLATFORMS.YOUTUBE]: ["js/youtube.js", "js/vendor.js"],
-    [PLATFORMS.AMAZON_PRIME]: ["js/amazon.js", "js/vendor.js"],
-  };
-
-  const files = scriptFiles[platform];
-  if (files) {
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files,
-    });
-  }
-};
-
-// Main script injection logic
-const injectScripts = async (tabId: number, url: string) => {
-    const platform = getPlatform(url);
-    if (!platform) return;
-
-    injectPlatformScripts(tabId, platform);
-};
-
-// Handle tab updates
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  const isTabReady =
-    changeInfo.status === "complete" || changeInfo.audible === true;
-
-  if (!isTabReady || !tab.url) return;
-
-  injectScripts(tabId, tab.url);
-});
-
-// Handle tab activation
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  const tab = await chrome.tabs.get(activeInfo.tabId);
-  if (tab.url) {
-    injectScripts(activeInfo.tabId, tab.url);
-  }
-});
-
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'DOWNLOAD_SUBTITLE') {
     (async () => {
@@ -170,5 +121,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     })();
     return true;
+  }
+});
+
+
+// Create context menu item for Japanese text translation
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "translate-japanese-text",
+    title: "Translate Japanese Text",
+    contexts: ["selection"],
+  });
+});
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "translate-japanese-text" && tab?.id) {
+    chrome.tabs.sendMessage(tab.id, {
+      type: "CONTEXT_MENU_CLICKED",
+      menuItemId: "translate-japanese-text",
+    });
   }
 });

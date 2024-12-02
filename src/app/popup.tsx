@@ -1,46 +1,13 @@
-import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
+import React from "react";
+import { createRoot } from "react-dom/client";
 
 // Utils
 import { cn } from "../utils/cn";
 
-// Constants
-import { DEFAULT_FONT_SIZE } from "../lib/constants";
-import { Settings } from "../types";
-
 // Styles
-import "./styles/index.css";
+import "../styles/global.css";
 
 const Popup = () => {
-  const [settings, setSettings] = useState<Settings>({
-    fontSize: DEFAULT_FONT_SIZE,
-    fontColor: "#383838",
-    showSubtitles: false,
-  });
-
-  const updateSettings = (
-    key: keyof Settings,
-    value: Settings[keyof Settings]
-  ) => {
-    setSettings((prevSettings) => {
-      const settings = {
-        ...prevSettings,
-        [key]: value,
-      };
-
-      chrome.storage.local.set({
-        settings,
-      });
-
-      return settings;
-    });
-  };
-
-  
-  const handleShowSubtitlesChange = (showSubtitles: boolean) => {
-    updateSettings("showSubtitles", showSubtitles);
-  };
-
   const handleQuizClick = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
@@ -48,7 +15,7 @@ const Popup = () => {
       // Inject the content script into the active tab if not already injected
       chrome.scripting.executeScript({
         target: { tabId: activeTab.id as number },
-        files: ["js/quiz.js", "js/vendor.js"],
+        files: ["quiz.js"],
       });
     });
   };
@@ -56,16 +23,6 @@ const Popup = () => {
   const handleManageLearnings = () => {
     chrome.tabs.create({ url: "profile.html" });
   };
-
-  useEffect(() => {
-    chrome.storage.local.get(["settings"], (result) => {
-      if (result.settings) {
-        setSettings(result.settings);
-      }
-    });
-  }, []);
-
-  const { showSubtitles, fontSize, fontColor } = settings;
 
   return (
     <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
@@ -83,26 +40,6 @@ const Popup = () => {
           </div>
           <h1 className="text-xl font-bold">Subtaitoru</h1>
         </a>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showSubtitles}
-          aria-labelledby="show-subtitles-label"
-          onClick={() => handleShowSubtitlesChange(!showSubtitles)}
-          className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-            showSubtitles ? "bg-indigo-600" : "bg-gray-200"
-          }`}
-        >
-          <span className="sr-only">
-            {showSubtitles ? "Turn off subtitles" : "Turn on subtitles"}
-          </span>
-          <span
-            className={`${
-              showSubtitles ? "translate-x-6" : "translate-x-1"
-            } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
-            aria-hidden="true"
-          />
-        </button>
       </header>
       <main>
         <section aria-labelledby="quiz-title" className="mb-6">
@@ -156,9 +93,16 @@ const Popup = () => {
   );
 };
 
-ReactDOM.render(
+const container = document.getElementById("root");
+
+if (!container) {
+  throw new Error("Root element not found");
+}
+
+const root = createRoot(container);
+
+root.render(
   <React.StrictMode>
     <Popup />
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );

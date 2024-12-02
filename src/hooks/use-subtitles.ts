@@ -1,7 +1,7 @@
 import { useState, useCallback, RefObject, useEffect } from "react";
 import * as wanakana from "wanakana";
 import { Word } from "../types";
-import { localStorageService } from "../services/local-storage";
+import { LocalStorageService } from "../services/local-storage";
 import { translationService } from "../services/api";
 
 interface UseTranslationPopupProps {
@@ -26,6 +26,7 @@ export const useSubtitles = ({
     isFetching: false,
     isCached: false,
   });
+  const storageService = LocalStorageService.getInstance();
 
   const fetchWordDetails = useCallback(
     async (word: string) => {
@@ -38,7 +39,7 @@ export const useSubtitles = ({
         isVisible: false,
       }));
 
-      const cachedWord = await localStorageService.getWordFromStorage(word);
+      const cachedWord = await storageService.getWord(word);
 
       if (cachedWord && isMounted.current) {
         setPopupState({

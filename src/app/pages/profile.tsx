@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 
-import { localStorageService } from "../../services/local-storage";
+import { LocalStorageService } from "../../services/local-storage";
 
 // Models
 import { SavedWords } from "../../types";
 
 // Style
-import "../styles/index.css";
+import "../../styles/global.css";
 
 const ProfilePage: React.FC = () => {
   const [learnedWords, setLearnedWords] = useState<SavedWords[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const localStorageService = LocalStorageService.getInstance();
 
   useEffect(() => {
-    localStorageService.getAllWordsFromStorage().then((words) => {
+    localStorageService.getAllWords().then((words) => {
       console.log({ words });
       setLearnedWords(words);
     });
   }, []);
 
   const handleRemoveWord = (wordToRemove: string) =>
-    localStorageService.deleteWordFromStorage(wordToRemove);
+    localStorageService.removeWord(wordToRemove);
 
   const handleRemoveAll = () => {
-    localStorageService.deleteAllWordsFromStorage();
+    localStorageService.deleteAllWords();
     setLearnedWords([]);
   };
 
