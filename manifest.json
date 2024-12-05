@@ -40,7 +40,7 @@
     {
       "matches": ["*://*.youtube.com/watch?*"],
       "js": ["youtube.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     },
     {
       "matches": [
@@ -50,7 +50,7 @@
         "*://*.amazon.de/*/video/detail*"
       ],
       "js": ["amazon.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     },
     {
       "matches": ["<all_urls>"],
@@ -59,6 +59,7 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   }
 }

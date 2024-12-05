@@ -123,3 +123,10 @@ export interface Settings {
   fontColor?: string;
   showSubtitles?: boolean;
 }
+
+
+export interface YoutubeCaptionsTokenize {
+  start: number;
+  end: number;
+  text: string[];
+}

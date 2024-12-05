@@ -1,6 +1,6 @@
 import React, { useCallback, useContext } from "react";
 import { cn } from "../utils/cn";
-import { useStorage } from "../context/storage-context";
+import { useSettings } from "../context/settings-context";
 
 
 export interface SubtitlesProps {
@@ -35,7 +35,7 @@ export const Subtitles = React.memo(function Subtitles({
   videoElement,
   onWordClick,
 }: SubtitlesProps) {
-  const { settings } = useStorage();
+  const { settings } = useSettings();
 
   const handleMouseEnter = useCallback(() => {
     if (videoElement) {

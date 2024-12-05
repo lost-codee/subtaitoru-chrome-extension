@@ -2,7 +2,7 @@ import { useState, useCallback, RefObject, useEffect } from "react";
 import * as wanakana from "wanakana";
 import { Word } from "../types";
 import { LocalStorageService } from "../services/local-storage";
-import { translationService } from "../services/api";
+import { TranslationFetcher } from "../services/translation-fetcher";
 
 interface UseTranslationPopupProps {
   videoElement: HTMLVideoElement;
@@ -62,7 +62,7 @@ export const useSubtitles = ({
       }
 
       try {
-        const fetchedWord = await translationService.fetchWordTranslation(word);
+        const fetchedWord = await TranslationFetcher.fetchWordTranslation(word);
         if (isMounted.current) {
           setPopupState({
             wordDetails: (fetchedWord && {

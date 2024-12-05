@@ -5,15 +5,17 @@ import { createRoot } from "react-dom/client";
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
 import { Loading } from "../../components/ui/loading";
 import { VideoControls } from "../../components/video-controls";
-import { StorageProvider } from "../../context/storage-context";
+import { SettingsProvider } from "../../context/settings-context";
+import { SubtitlesList } from "../../components/subtitles-list";
 
 // Utils
-import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
 import { createShadowContainer } from "../../utils/create-shadow-container";
+import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
+import { findCurrentCaption } from "../../utils/find-current-caption";
 
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
-import { cn } from "../../utils/cn";
+
 
 
 interface YoutubeCaptions {
@@ -22,134 +24,135 @@ interface YoutubeCaptions {
   text: string;
 }
 
-interface YoutubeCaptionsToknize {
+export interface YoutubeCaptionsTokenize {
   start: number;
   end: number;
   text: string[];
 }
 
+
 const YoutubeSubtitles = React.memo(
   ({ videoElement }: { videoElement: HTMLVideoElement }) => {
-    const [captions, setCaptions] = useState<YoutubeCaptionsToknize[]>([]);
+    const [captions, setCaptions] = useState<YoutubeCaptionsTokenize[]>([]);
     const [subtitles, setSubtitles] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
 
-    // Helper to fetch YouTube metadata and captions
-    const fetchCaptions = async (videoId: string) => {
-      setIsLoading(true);
-      try {
-        // Fetch YouTube video metadata
-        const metadataResponse = await fetch(
-          `https://www.youtube.com/watch?v=${videoId}`
-        );
-        const metadataHtml = await metadataResponse.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(metadataHtml, "text/html");
-        const scripts = Array.from(doc.querySelectorAll("script"));
-        const captionsScript = scripts.find(
-          (script) =>
-            script.textContent &&
-            script.textContent.includes("ytInitialPlayerResponse = ")
-        );
-
-        if (!captionsScript || !captionsScript.textContent) {
-          throw new Error("Unable to locate captions metadata.");
-        }
-
-        // Parse captions metadata
-        const metadataMatch = captionsScript.textContent.match(
-          /ytInitialPlayerResponse\s*=\s*(\{.*\});/
-        );
-
-        if (!metadataMatch) {
-          throw new Error("Invalid captions metadata.");
-        }
-
-        const playerResponse = JSON.parse(metadataMatch[1]);
-
-        if (!playerResponse || !playerResponse.captions) {
-          throw new Error("Invalid captions metadata.");
-        }
-
-        const captionTracks =
-          playerResponse.captions?.playerCaptionsTracklistRenderer
-            ?.captionTracks;
-
-        if (!captionTracks || captionTracks.length === 0) {
-          throw new Error("No captions available for this video.");
-        }
-
-        // Look for Japanese captions
-        let trackUrl = captionTracks.find(
-          (track: any) => track.languageCode === "ja"
-        )?.baseUrl;
-
-        if (!trackUrl) {
-          // If no Japanese track, take the first available track
-          const firstTrack = captionTracks[0];
-          if (!firstTrack) {
-            throw new Error("No captions available for this video.");
-          }
-
-          // Check if the track is translatable to Japanese
-          if (firstTrack.isTranslatable) {
-            const japaneseTranslation =
-              playerResponse.captions?.playerCaptionsTracklistRenderer?.translationLanguages.find(
-                (lang: any) => lang.languageCode === "ja"
-              );
-
-            if (japaneseTranslation) {
-              trackUrl = `${firstTrack.baseUrl}&tlang=ja`; // Append translation language to URL
+        // Helper to fetch YouTube metadata and captions
+        const fetchCaptions = async (videoId: string) => {
+          setIsLoading(true);
+          try {
+            // Fetch YouTube video metadata
+            const metadataResponse = await fetch(
+              `https://www.youtube.com/watch?v=${videoId}`
+            );
+            const metadataHtml = await metadataResponse.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(metadataHtml, "text/html");
+            const scripts = Array.from(doc.querySelectorAll("script"));
+            const captionsScript = scripts.find(
+              (script) =>
+                script.textContent &&
+                script.textContent.includes("ytInitialPlayerResponse = ")
+            );
+    
+            if (!captionsScript || !captionsScript.textContent) {
+              throw new Error("Unable to locate captions metadata.");
             }
+    
+            // Parse captions metadata
+            const metadataMatch = captionsScript.textContent.match(
+              /ytInitialPlayerResponse\s*=\s*(\{.*\});/
+            );
+    
+            if (!metadataMatch) {
+              throw new Error("Invalid captions metadata.");
+            }
+    
+            const playerResponse = JSON.parse(metadataMatch[1]);
+    
+            if (!playerResponse || !playerResponse.captions) {
+              throw new Error("Invalid captions metadata.");
+            }
+    
+            const captionTracks =
+              playerResponse.captions?.playerCaptionsTracklistRenderer
+                ?.captionTracks;
+    
+            if (!captionTracks || captionTracks.length === 0) {
+              throw new Error("No captions available for this video.");
+            }
+    
+            // Look for Japanese captions
+            let trackUrl = captionTracks.find(
+              (track: any) => track.languageCode === "ja"
+            )?.baseUrl;
+    
+            if (!trackUrl) {
+              // If no Japanese track, take the first available track
+              const firstTrack = captionTracks[0];
+              if (!firstTrack) {
+                throw new Error("No captions available for this video.");
+              }
+    
+              // Check if the track is translatable to Japanese
+              if (firstTrack.isTranslatable) {
+                const japaneseTranslation =
+                  playerResponse.captions?.playerCaptionsTracklistRenderer?.translationLanguages.find(
+                    (lang: any) => lang.languageCode === "ja"
+                  );
+    
+                if (japaneseTranslation) {
+                  trackUrl = `${firstTrack.baseUrl}&tlang=ja`; // Append translation language to URL
+                }
+              }
+            }
+    
+            if (!trackUrl) {
+              throw new Error(
+                "No Japanese captions or translatable captions available for this video."
+              );
+            }
+    
+            // Fetch and parse captions data
+            const captionsResponse = await fetch(trackUrl);
+            const captionsText = await captionsResponse.text();
+            const captionsParser = new DOMParser();
+            const captionsDoc = captionsParser.parseFromString(
+              captionsText,
+              "text/xml"
+            );
+            const captionElements = captionsDoc.getElementsByTagName("text");
+    
+            const parsedCaptions: YoutubeCaptions[] = Array.from(
+              captionElements
+            ).map((element) => ({
+              start: parseFloat(element.getAttribute("start") || "0"),
+              end:
+                parseFloat(element.getAttribute("dur") || "0") +
+                parseFloat(element.getAttribute("start") || "0"),
+              text: element.textContent || "",
+            }));
+    
+            // tokenize to japanese text
+            const tokenizeCaptions: YoutubeCaptionsTokenize[] = parsedCaptions.map(
+              (caption) => {
+                const tokenize = tokenizeJapaneseText(caption.text);
+                return { ...caption, text: tokenize };
+              }
+            );
+    
+            setCaptions(tokenizeCaptions);
+          } catch (error) {
+            setError(
+              "Error fetching captions: " +
+                (error instanceof Error ? error.message : "Unknown error")
+            );
+          } finally {
+            setIsLoading(false);
           }
-        }
-
-        if (!trackUrl) {
-          throw new Error(
-            "No Japanese captions or translatable captions available for this video."
-          );
-        }
-
-        // Fetch and parse captions data
-        const captionsResponse = await fetch(trackUrl);
-        const captionsText = await captionsResponse.text();
-        const captionsParser = new DOMParser();
-        const captionsDoc = captionsParser.parseFromString(
-          captionsText,
-          "text/xml"
-        );
-        const captionElements = captionsDoc.getElementsByTagName("text");
-
-        const parsedCaptions: YoutubeCaptions[] = Array.from(
-          captionElements
-        ).map((element) => ({
-          start: parseFloat(element.getAttribute("start") || "0"),
-          end:
-            parseFloat(element.getAttribute("dur") || "0") +
-            parseFloat(element.getAttribute("start") || "0"),
-          text: element.textContent || "",
-        }));
-
-        // tokenize to japanese text
-        const tokenizeCaptions: YoutubeCaptionsToknize[] = parsedCaptions.map(
-          (caption) => {
-            const tokenize = tokenizeJapaneseText(caption.text);
-            return { ...caption, text: tokenize };
-          }
-        );
-
-        setCaptions(tokenizeCaptions);
-      } catch (error) {
-        setError(
-          "Error fetching captions: " +
-            (error instanceof Error ? error.message : "Unknown error")
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        };
 
     useEffect(() => {
       const videoId = new URLSearchParams(window.location.search).get("v");
@@ -159,28 +162,6 @@ const YoutubeSubtitles = React.memo(
       }
     }, []);
 
-    const findCurrentCaption = (
-      captions: YoutubeCaptionsToknize[],
-      currentTime: number
-    ) => {
-      let left = 0;
-      let right = captions.length - 1;
-
-      while (left <= right) {
-        const mid = Math.floor((left + right) / 2);
-        const caption = captions[mid];
-
-        if (currentTime >= caption.start && currentTime <= caption.end) {
-          return caption;
-        } else if (currentTime < caption.start) {
-          right = mid - 1;
-        } else {
-          left = mid + 1;
-        }
-      }
-
-      return null; // No matching caption found
-    };
 
     useEffect(() => {
       if (!videoElement) return;
@@ -275,146 +256,28 @@ const YoutubeSubtitles = React.memo(
   }
 );
 
-interface SubtitlesListProps {
-  captions: YoutubeCaptionsToknize[];
-  videoElement: HTMLVideoElement;
-}
-
-const SubtitlesList = ({
-  captions,
-  videoElement,
-}: SubtitlesListProps) => {
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const height  = videoElement.clientHeight;
-
-
-  const handleTimeClick = (time: number) => {
-    if (videoElement) {
-      videoElement.currentTime = time;
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-
-  useEffect(() => {
-    if (videoElement) {
-
-      const handleTimeUpdate = () => {
-        const currentTime = videoElement.currentTime;
-        console.log({currentTime});
-        // according to the start time
-        const index = captions.findIndex((caption) => caption.start <= currentTime && caption.end >= currentTime);
-        console.log({index});
-        if(index > 0) {
-          setCurrentIndex(index);
-        }
-      };
-
-      videoElement.addEventListener("timeupdate", handleTimeUpdate);
-
-      return () => {
-        videoElement.removeEventListener("timeupdate", handleTimeUpdate);
-      };
-    }
-  }, [captions, videoElement]);
-
-  console.log({currentIndex});
-
-  return (
-    <div 
-      className="bg-[#0f0f0f] text-white rounded-lg shadow-lg flex flex-col"
-      style={{
-        height: height ? `${height}px` : 'auto',
-        maxHeight: '100vh',
-      }}
-    >
-      <div className="overflow-y-auto flex-grow">
-        {captions.map((caption, index) => (
-          <div
-            key={index}
-            className={cn("flex hover:bg-[#272727] cursor-pointer px-[12px] py-[8px]", currentIndex === index ? "bg-[#272727]" : "")}
-            onClick={() => handleTimeClick(caption.start)}
-          >
-            <div className="text-[#ff9b3c] text-[12px] font-medium w-[40px] pt-0.5">
-              {formatTime(caption.start)}
-            </div>
-            <div className="text-[#f1f1f1] text-[14px] ml-[8px] flex-1">
-              {caption.text.join("")}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const renderSubtitles = (
-  videoElement: HTMLVideoElement[],
-  container: HTMLElement
-) => {
-  if (document.getElementById(SUBTAITORU_ROOT_ID)) {
-   return;
-  }
-
-  const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
-  container.appendChild(shadowRoot.host);
-
-  const root = createRoot(shadowRoot);
-
-  root.render(
-    <React.StrictMode>
-      <StorageProvider>
-        <YoutubeSubtitles videoElement={videoElement[0]} />
-      </StorageProvider>
-    </React.StrictMode>
-  );
-};
-
 const init = () => {
-  const observeAndRender = () => {
-    const container = document.getElementById("ytp-caption-window-container");
-    const videoElement = document.querySelector<HTMLVideoElement>(".video-stream.html5-main-video");
+  if (document.getElementById(SUBTAITORU_ROOT_ID)) {
+    return;
+   }
+   
+  const videoElement = document.querySelector<HTMLVideoElement>(".video-stream.html5-main-video");
+  if (!videoElement) return;
 
-    if (container && videoElement) {
-      renderSubtitles([videoElement], container);
-      return true;
-    }
-    return false;
-  };
+  const container = document.getElementById("ytp-caption-window-container");
+  if (!container) return;
 
-  let isRendered = false;
 
-  const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.type === "childList") {
-        if (mutation.removedNodes.length && isRendered) {
-          // If our rendered subtitles were removed, reset the flag
-          isRendered = false;
-        }
-        if (mutation.addedNodes.length && !isRendered) {
-          // Try to render if not already rendered
-          isRendered = observeAndRender();
-        }
-      }
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Initial render attempt
-  isRendered = observeAndRender();
-
-  // Periodic check to ensure subtitles are rendered
-  setInterval(() => {
-    if (!isRendered) {
-      isRendered = observeAndRender();
-    }
-  }, 5000);
+   // Create shadow DOM container
+   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
+   container.appendChild(shadowRoot.host);
+ 
+  const root = createRoot(shadowRoot);
+  root.render(
+    <SettingsProvider>
+      <YoutubeSubtitles videoElement={videoElement} />
+    </SettingsProvider>
+  );
 };
 
 init();

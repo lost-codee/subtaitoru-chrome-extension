@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { TranslationPopup } from "../../components/translation-popup";
-import { translationService } from "../../services/api";
+import { TranslationFetcher } from "../../services/translation-fetcher";
 import { createShadowContainer } from "../../utils/create-shadow-container";
 import { Word } from "../../types";
 import * as wanakana from "wanakana";
@@ -109,7 +109,7 @@ class JapaneseTranslator {
         "[JapaneseTranslator] Fetching translation for:",
         this.currentSelection
       );
-      const wordData = await translationService.fetchWordTranslation(
+      const wordData = await TranslationFetcher.fetchWordTranslation(
         this.currentSelection
       );
 

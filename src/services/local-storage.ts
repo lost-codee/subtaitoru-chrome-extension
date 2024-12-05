@@ -1,6 +1,6 @@
 import { JAPANESE_SAVED_WORDS } from "../lib/constants";
 import { SavedWords } from "../types";
-import { areWordsEqual } from "../utils/are-words-equal";
+import { areWordsEqual } from "../utils/compare-japanese-words";
 
 export class LocalStorageService {
   private static instance: LocalStorageService;

@@ -1,3 +1,4 @@
+// Handle subtitle download requests
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'DOWNLOAD_SUBTITLE') {
     (async () => {
@@ -7,10 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Get the response as an ArrayBuffer
         const buffer = await response.arrayBuffer();
-        
-        // Convert ArrayBuffer to array for message passing
         const uint8Array = new Uint8Array(buffer);
         const array = Array.from(uint8Array);
         
@@ -26,8 +24,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       }
     })();
-    
-    // Return true to indicate we will send response asynchronously
     return true;
   }
 
@@ -77,69 +73,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     })();
     return true;
-  }
-
-  if (message.type === 'TRANSLATE') {
-    (async () => {
-      try {
-        // Get API key from storage
-        chrome.storage.local.get(['deeplApiKey'], async (result) => {
-          const apiKey = result.deeplApiKey || 'b32ece32-cd2a-40a5-a372-c9c0bfbe465e:fx'; // Fallback to default key
-          
-          try {
-            const response = await fetch('https://api-free.deepl.com/v2/translate', {
-              method: 'POST',
-              headers: {
-                'Authorization': `DeepL-Auth-Key ${apiKey}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-              body: new URLSearchParams({
-                text: message.text,
-                target_lang: 'EN',
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            sendResponse({ success: true, data });
-          } catch (error: unknown) {
-            console.error('Translation error:', error);
-            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
-          }
-        });
-
-        return true; // Will respond asynchronously
-      } catch (error) {
-        console.error('Error translating text:', error);
-        sendResponse({
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-    })();
-    return true;
-  }
-});
-
-
-// Create context menu item for Japanese text translation
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "translate-japanese-text",
-    title: "Translate Japanese Text",
-    contexts: ["selection"],
-  });
-});
-
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "translate-japanese-text" && tab?.id) {
-    chrome.tabs.sendMessage(tab.id, {
-      type: "CONTEXT_MENU_CLICKED",
-      menuItemId: "translate-japanese-text",
-    });
   }
 });

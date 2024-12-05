@@ -6,7 +6,7 @@ interface SubtitleSettings {
   showSubtitles: boolean;
 }
 
-interface StorageContextType {
+interface SettingsContextType {
   settings: SubtitleSettings;
   updateSettings: (settings: Partial<SubtitleSettings>) => void;
 }
@@ -17,9 +17,9 @@ const defaultSettings: SubtitleSettings = {
   showSubtitles: false,
 };
 
-const StorageContext = createContext<StorageContextType | null>(null);
+const SettingsContext = createContext<SettingsContextType | null>(null);
 
-export const StorageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SubtitleSettings>(defaultSettings);
 
   useEffect(() => {
@@ -60,14 +60,14 @@ export const StorageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   return (
-    <StorageContext.Provider value={{ settings, updateSettings }}>
+    <SettingsContext.Provider value={{ settings, updateSettings }}>
       {children}
-    </StorageContext.Provider>
+    </SettingsContext.Provider>
   );
 };
 
-export const useStorage = () => {
-  const context = useContext(StorageContext);
+export const useSettings = () => {
+  const context = useContext(SettingsContext);
   if (!context) {
     throw new Error('useStorage must be used within a StorageProvider');
   }

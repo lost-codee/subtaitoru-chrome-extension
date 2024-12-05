@@ -7,7 +7,7 @@ const copyPatterns = [{ from: "public" }, { from: "manifest.json" }];
 module.exports = {
   entry: {
     popup: "./src/app/popup.tsx",
-    background: "./src/app/background.ts",
+    background: "./src/app/background/index.ts",
     profile: "./src/app/pages/profile.tsx",
     youtube: "./src/app/content/youtube.tsx",
     amazon: "./src/app/content/amazon.tsx",

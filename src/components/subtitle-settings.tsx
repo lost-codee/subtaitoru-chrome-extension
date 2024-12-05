@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '../utils/cn';
-import { useStorage } from '../context/storage-context';
+import { useSettings } from '../context/settings-context';
 
 interface SubtitleSettingsProps {
   onOffsetChange: (offset: number) => void;
@@ -15,7 +15,7 @@ export const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('timing');
-  const { settings, updateSettings } = useStorage();
+  const { settings, updateSettings } = useSettings();
 
   const handleOffsetChange = (seconds: number) => {
     onOffsetChange(currentOffset + seconds);

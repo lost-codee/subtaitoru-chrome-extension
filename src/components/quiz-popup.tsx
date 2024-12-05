@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { TranslationFetcher } from "../services/translation-fetcher";
+import { LocalStorageService } from "../services/local-storage";
 
 // Components
 import { Loading } from "./ui/loading";
 
 // Models
 import { QuizData, SavedWords } from "../types";
-import { translationService } from "../services/api";
-import { LocalStorageService } from "../services/local-storage";
 
 // Types
 interface QuizPopupProps {
@@ -174,7 +174,7 @@ export const QuizPopup: React.FC<QuizPopupProps> = ({ onClose }) => {
     const fetchWrongAnswers = async () => {
       setLoading(true);
       try {
-        const response = await translationService.getCommonWords();
+        const response = await TranslationFetcher.getCommonWords();
         if (!response) {
           throw new Error("Failed to fetch wrong answers");
         }

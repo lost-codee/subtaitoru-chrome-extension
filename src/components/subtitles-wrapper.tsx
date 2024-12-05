@@ -3,7 +3,7 @@ import { Subtitles } from "./subtitles";
 import { Loading } from "./ui/loading";
 import { TranslationPopup } from "./translation-popup";
 import { useSubtitles } from "../hooks/use-subtitles";
-import { useStorage } from "../context/storage-context";
+import { useSettings } from "../context/settings-context";
 
 interface SubtitlesWrapperProps {
   subtitles: string[] | null;
@@ -29,7 +29,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   videoElement,
 }) => {
 
-  const storage = useStorage();
+  const {settings} = useSettings();
   const isMounted = useRef(true);
   const subtitleWrapperRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ bottom: number }>({
@@ -84,7 +84,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
   }
 
 
-  if(storage.settings.showSubtitles === false) {
+  if(settings.showSubtitles === false) {
     return null;
   }
   

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, memo } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 // Components
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
 import { Loading } from "../../components/ui/loading";
 import { VideoControls } from "../../components/video-controls";
-import { StorageProvider } from "../../context/storage-context";
+import { SettingsProvider } from "../../context/settings-context";
 
 // Utils
 import { createShadowContainer } from "../../utils/create-shadow-container";
@@ -70,10 +70,10 @@ const getEpisodeInfo = () => {
 
 const AmazonPrimeSubtitles = memo(
   ({ videoElement }: { videoElement: HTMLVideoElement }) => {
-    const [subtitles, setSubtitles] = useState<string[] | null>(null);
     const [parsedSubtitles, setParsedSubtitles] = useState<
       ReturnType<typeof parseAssSubtitles>
     >([]);
+    const [subtitles, setSubtitles] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
@@ -86,7 +86,6 @@ const AmazonPrimeSubtitles = memo(
           const titleElement = document.querySelector(
             '[data-automation-id="title"]'
           );
-          console.log({ titleElement });
 
           if (!titleElement) {
             throw new Error("Could not find title");
@@ -119,8 +118,6 @@ const AmazonPrimeSubtitles = memo(
             throw new Error("No Japanese subtitles found for this title");
           }
 
-          console.log({ subtitleResults });
-
           // Try to download subtitles
           const subtitleContent = await SubtitleFetcher.downloadSubtitles(
             subtitleResults[0]
@@ -131,7 +128,6 @@ const AmazonPrimeSubtitles = memo(
 
           // Parse the downloaded subtitles
           const parsed = parseAssSubtitles(subtitleContent);
-          console.log("Parsed subtitles:", parsed);
           setParsedSubtitles(parsed);
         } catch (error) {
           setError(
@@ -226,13 +222,14 @@ const AmazonPrimeSubtitles = memo(
 const renderSubtitles = (videoElement: HTMLVideoElement) => {
   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
   videoElement.parentElement?.appendChild(shadowRoot.host);
-  ReactDOM.render(
+
+  const root = createRoot(shadowRoot);
+  root.render(
     <React.StrictMode>
-      <StorageProvider>
+      <SettingsProvider>
         <AmazonPrimeSubtitles videoElement={videoElement} />
-      </StorageProvider>
-    </React.StrictMode>,
-    shadowRoot
+      </SettingsProvider>
+    </React.StrictMode>
   );
 };
 
