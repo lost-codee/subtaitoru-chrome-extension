@@ -16,8 +16,6 @@ import { findCurrentCaption } from "../../utils/find-current-caption";
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
 
-
-
 interface YoutubeCaptions {
   start: number;
   end: number;
@@ -30,7 +28,6 @@ export interface YoutubeCaptionsTokenize {
   text: string[];
 }
 
-
 const YoutubeSubtitles = React.memo(
   ({ videoElement }: { videoElement: HTMLVideoElement }) => {
     const [captions, setCaptions] = useState<YoutubeCaptionsTokenize[]>([]);
@@ -39,120 +36,120 @@ const YoutubeSubtitles = React.memo(
     const [error, setError] = useState<string | null>(null);
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
 
-        // Helper to fetch YouTube metadata and captions
-        const fetchCaptions = async (videoId: string) => {
-          setIsLoading(true);
-          try {
-            // Fetch YouTube video metadata
-            const metadataResponse = await fetch(
-              `https://www.youtube.com/watch?v=${videoId}`
-            );
-            const metadataHtml = await metadataResponse.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(metadataHtml, "text/html");
-            const scripts = Array.from(doc.querySelectorAll("script"));
-            const captionsScript = scripts.find(
-              (script) =>
-                script.textContent &&
-                script.textContent.includes("ytInitialPlayerResponse = ")
-            );
-    
-            if (!captionsScript || !captionsScript.textContent) {
-              throw new Error("Unable to locate captions metadata.");
-            }
-    
-            // Parse captions metadata
-            const metadataMatch = captionsScript.textContent.match(
-              /ytInitialPlayerResponse\s*=\s*(\{.*\});/
-            );
-    
-            if (!metadataMatch) {
-              throw new Error("Invalid captions metadata.");
-            }
-    
-            const playerResponse = JSON.parse(metadataMatch[1]);
-    
-            if (!playerResponse || !playerResponse.captions) {
-              throw new Error("Invalid captions metadata.");
-            }
-    
-            const captionTracks =
-              playerResponse.captions?.playerCaptionsTracklistRenderer
-                ?.captionTracks;
-    
-            if (!captionTracks || captionTracks.length === 0) {
-              throw new Error("No captions available for this video.");
-            }
-    
-            // Look for Japanese captions
-            let trackUrl = captionTracks.find(
-              (track: any) => track.languageCode === "ja"
-            )?.baseUrl;
-    
-            if (!trackUrl) {
-              // If no Japanese track, take the first available track
-              const firstTrack = captionTracks[0];
-              if (!firstTrack) {
-                throw new Error("No captions available for this video.");
-              }
-    
-              // Check if the track is translatable to Japanese
-              if (firstTrack.isTranslatable) {
-                const japaneseTranslation =
-                  playerResponse.captions?.playerCaptionsTracklistRenderer?.translationLanguages.find(
-                    (lang: any) => lang.languageCode === "ja"
-                  );
-    
-                if (japaneseTranslation) {
-                  trackUrl = `${firstTrack.baseUrl}&tlang=ja`; // Append translation language to URL
-                }
-              }
-            }
-    
-            if (!trackUrl) {
-              throw new Error(
-                "No Japanese captions or translatable captions available for this video."
-              );
-            }
-    
-            // Fetch and parse captions data
-            const captionsResponse = await fetch(trackUrl);
-            const captionsText = await captionsResponse.text();
-            const captionsParser = new DOMParser();
-            const captionsDoc = captionsParser.parseFromString(
-              captionsText,
-              "text/xml"
-            );
-            const captionElements = captionsDoc.getElementsByTagName("text");
-    
-            const parsedCaptions: YoutubeCaptions[] = Array.from(
-              captionElements
-            ).map((element) => ({
-              start: parseFloat(element.getAttribute("start") || "0"),
-              end:
-                parseFloat(element.getAttribute("dur") || "0") +
-                parseFloat(element.getAttribute("start") || "0"),
-              text: element.textContent || "",
-            }));
-    
-            // tokenize to japanese text
-            const tokenizeCaptions: YoutubeCaptionsTokenize[] = parsedCaptions.map(
-              (caption) => {
-                const tokenize = tokenizeJapaneseText(caption.text);
-                return { ...caption, text: tokenize };
-              }
-            );
-    
-            setCaptions(tokenizeCaptions);
-          } catch (error) {
-            setError(
-              "Error fetching captions: " +
-                (error instanceof Error ? error.message : "Unknown error")
-            );
-          } finally {
-            setIsLoading(false);
+    // Helper to fetch YouTube metadata and captions
+    const fetchCaptions = async (videoId: string) => {
+      setIsLoading(true);
+      try {
+        // Fetch YouTube video metadata
+        const metadataResponse = await fetch(
+          `https://www.youtube.com/watch?v=${videoId}`
+        );
+        const metadataHtml = await metadataResponse.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(metadataHtml, "text/html");
+        const scripts = Array.from(doc.querySelectorAll("script"));
+        const captionsScript = scripts.find(
+          (script) =>
+            script.textContent &&
+            script.textContent.includes("ytInitialPlayerResponse = ")
+        );
+
+        if (!captionsScript || !captionsScript.textContent) {
+          throw new Error("Unable to locate captions metadata.");
+        }
+
+        // Parse captions metadata
+        const metadataMatch = captionsScript.textContent.match(
+          /ytInitialPlayerResponse\s*=\s*(\{.*\});/
+        );
+
+        if (!metadataMatch) {
+          throw new Error("Invalid captions metadata.");
+        }
+
+        const playerResponse = JSON.parse(metadataMatch[1]);
+
+        if (!playerResponse || !playerResponse.captions) {
+          throw new Error("Invalid captions metadata.");
+        }
+
+        const captionTracks =
+          playerResponse.captions?.playerCaptionsTracklistRenderer
+            ?.captionTracks;
+
+        if (!captionTracks || captionTracks.length === 0) {
+          throw new Error("No captions available for this video.");
+        }
+
+        // Look for Japanese captions
+        let trackUrl = captionTracks.find(
+          (track: any) => track.languageCode === "ja"
+        )?.baseUrl;
+
+        if (!trackUrl) {
+          // If no Japanese track, take the first available track
+          const firstTrack = captionTracks[0];
+          if (!firstTrack) {
+            throw new Error("No captions available for this video.");
           }
-        };
+
+          // Check if the track is translatable to Japanese
+          if (firstTrack.isTranslatable) {
+            const japaneseTranslation =
+              playerResponse.captions?.playerCaptionsTracklistRenderer?.translationLanguages.find(
+                (lang: any) => lang.languageCode === "ja"
+              );
+
+            if (japaneseTranslation) {
+              trackUrl = `${firstTrack.baseUrl}&tlang=ja`; // Append translation language to URL
+            }
+          }
+        }
+
+        if (!trackUrl) {
+          throw new Error(
+            "No Japanese captions or translatable captions available for this video."
+          );
+        }
+
+        // Fetch and parse captions data
+        const captionsResponse = await fetch(trackUrl);
+        const captionsText = await captionsResponse.text();
+        const captionsParser = new DOMParser();
+        const captionsDoc = captionsParser.parseFromString(
+          captionsText,
+          "text/xml"
+        );
+        const captionElements = captionsDoc.getElementsByTagName("text");
+
+        const parsedCaptions: YoutubeCaptions[] = Array.from(
+          captionElements
+        ).map((element) => ({
+          start: parseFloat(element.getAttribute("start") || "0"),
+          end:
+            parseFloat(element.getAttribute("dur") || "0") +
+            parseFloat(element.getAttribute("start") || "0"),
+          text: element.textContent || "",
+        }));
+
+        // tokenize to japanese text
+        const tokenizeCaptions: YoutubeCaptionsTokenize[] = parsedCaptions.map(
+          (caption) => {
+            const tokenize = tokenizeJapaneseText(caption.text);
+            return { ...caption, text: tokenize };
+          }
+        );
+
+        setCaptions(tokenizeCaptions);
+      } catch (error) {
+        setError(
+          "Error fetching captions: " +
+            (error instanceof Error ? error.message : "Unknown error")
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     useEffect(() => {
       const videoId = new URLSearchParams(window.location.search).get("v");
@@ -161,7 +158,6 @@ const YoutubeSubtitles = React.memo(
         fetchCaptions(videoId);
       }
     }, []);
-
 
     useEffect(() => {
       if (!videoElement) return;
@@ -259,19 +255,20 @@ const YoutubeSubtitles = React.memo(
 const init = () => {
   if (document.getElementById(SUBTAITORU_ROOT_ID)) {
     return;
-   }
-   
-  const videoElement = document.querySelector<HTMLVideoElement>(".video-stream.html5-main-video");
+  }
+
+  const videoElement = document.querySelector<HTMLVideoElement>(
+    ".video-stream.html5-main-video"
+  );
   if (!videoElement) return;
 
   const container = document.getElementById("ytp-caption-window-container");
   if (!container) return;
 
+  // Create shadow DOM container
+  const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
+  container.appendChild(shadowRoot.host);
 
-   // Create shadow DOM container
-   const shadowRoot = createShadowContainer(SUBTAITORU_ROOT_ID);
-   container.appendChild(shadowRoot.host);
- 
   const root = createRoot(shadowRoot);
   root.render(
     <SettingsProvider>

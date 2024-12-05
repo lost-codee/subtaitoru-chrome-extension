@@ -12,7 +12,7 @@ module.exports = {
     youtube: "./src/app/content/youtube.tsx",
     amazon: "./src/app/content/amazon.tsx",
     quiz: "./src/app/content/quiz.tsx",
-    general_translation: "./src/app/content/general_translation_script.tsx",
+    general_translation: "./src/app/content/translet-on-select.tsx",
   },
   module: {
     rules: [
