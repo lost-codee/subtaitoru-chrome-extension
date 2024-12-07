@@ -92,6 +92,18 @@ export class SubtitleFetcher {
     return Math.max(0, Math.min(1, confidence));
   }
 
+
+  private static calculateTitleMatchScore(searchTitle: string, directoryTitle: string): number {
+    // just check how many characters are the same one by one
+    let score = 0;
+    for (let i = 0; i < searchTitle.length; i++) {
+      if (searchTitle[i] === directoryTitle[i]) {
+        score++;
+      }
+    }
+    return score / searchTitle.length;
+  }
+
   static async searchSubtitles(params: SearchParams): Promise<SubtitleResult[]> {
     try {
       const queries: string[] = [];
@@ -100,9 +112,7 @@ export class SubtitleFetcher {
         queries.push(params.rawTitle);
       }
 
-      queries.push(params.title);
-
-     
+      queries.push(params.title);  
 
       const englishTitle = await this.translateToEnglish(params.title);
       if (englishTitle !== params.title) {
@@ -118,13 +128,26 @@ export class SubtitleFetcher {
         ];
         queries.push(...episodeFormats);
       }
-
-      console.log({queries});
    
       let allResults: SubtitleResult[] = [];
 
+      const kitsunekkoDirectories = await this.getKitsunekkoTitles();
+    
+      // Find the best matching directory based on title similarity
+      let bestMatch = kitsunekkoDirectories
+        .map(dir => ({
+          ...dir,
+          score: this.calculateTitleMatchScore(englishTitle, dir.title)
+        }))
+        .sort((a, b) => b.score - a.score)[0];
+
+       console.log({bestMatch});
+
+       const kitsunekkoResults = await this.searchKitsunekko(bestMatch.dirPath);
+
+       console.log({kitsunekkoResults});
+ 
       for (const query of queries) {
-        const kitsunekkoResults = await this.searchKitsunekko(query);
         allResults.push(...kitsunekkoResults.map(result => ({
           ...result,
           source: 'kitsunekko' as const,
@@ -139,15 +162,13 @@ export class SubtitleFetcher {
         })));
       }
 
-      console.log({allResults});
+      console.log('Fetched subtitles:', allResults);
 
       const uniqueResults = Array.from(new Map(
         allResults.map(result => [result.url, result])
       ).values());
 
-
-      console.log({uniqueResults});
-    
+      console.log('Unique subtitles:', uniqueResults);
 
       return uniqueResults
         .sort((a, b) => b.confidence - a.confidence)
@@ -194,7 +215,7 @@ export class SubtitleFetcher {
                   return;
                 }
               } catch (e) {
-                console.warn(`Failed to decode with ${encoding}:`, e);
+                console.error(`Failed to decode with ${encoding}:`, e);
                 continue;
               }
             }
@@ -209,13 +230,13 @@ export class SubtitleFetcher {
     });
   }
 
-  private static async searchKitsunekko(query: string): Promise<SubtitleResult[]> {
+  private static async getKitsunekkoTitles(): Promise<{ title: string; dirPath: string }[]> {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage(
-        { type: 'SEARCH_KITSUNEKKO', query },
+        { type: 'FETCH_KITSUNEKKO_MAIN' },
         (response) => {
           if (chrome.runtime.lastError || !response?.success) {
-            console.error('Kitsunekko search error:', chrome.runtime.lastError || response?.error);
+            console.error('Kitsunekko main page fetch error:', chrome.runtime.lastError || response?.error);
             resolve([]);
             return;
           }
@@ -223,36 +244,79 @@ export class SubtitleFetcher {
           try {
             const parser = new DOMParser();
             const doc = parser.parseFromString(response.data, 'text/html');
-            const subtitleLinks = doc.querySelectorAll('a[href$=".srt"], a[href$=".ass"]');
+            const rows = doc.querySelectorAll('tr');
             
-            const results: SubtitleResult[] = [];
-            subtitleLinks.forEach(link => {
-              const href = link.getAttribute('href') || '';
-              const cleanHref = href.replace(/^\/+/, '').replace(/^subtitles\/japanese\//, '');
-              
-              const pathComponents = cleanHref.split('/').map(component => 
-                encodeURIComponent(component.trim())
-              );
-
-              const title = link.textContent?.trim() || cleanHref;
-              
-              results.push({
-                title,
-                language: 'ja',
-                url: `https://kitsunekko.net/subtitles/japanese/${pathComponents.join('/')}`,
-                source: 'kitsunekko',
-                confidence: 0
-              });
+            const titles = new Set<{ title: string; dirPath: string }>();
+            rows.forEach(row => {
+              const link = row.querySelector('a[href*="dirlist.php?dir=subtitles%2Fjapanese%2F"]');
+              if (link) {
+                const href = link.getAttribute('href') || '';
+                const title = link.textContent?.trim().replace(/\s*\(.*\)\s*$/, '') || '';
+                
+                if (title && href.includes('dirlist.php?dir=')) {
+                  const dirPath = decodeURIComponent(href.split('dir=')[1]);
+                  titles.add({ title, dirPath });
+                }
+              }
             });
 
-            resolve(results);
+            const titlesArray = Array.from(titles);
+            resolve(titlesArray);
           } catch (error) {
-            console.error('Error parsing Kitsunekko response:', error);
+            console.error('Error parsing Kitsunekko main page:', error);
             resolve([]);
           }
         }
       );
     });
+  }
+
+  private static async searchKitsunekko(query: string): Promise<SubtitleResult[]> {
+    // Search for subtitles within the best matching directory
+    const response = await new Promise<any>((resolve) => {
+      chrome.runtime.sendMessage(
+        { type: 'SEARCH_KITSUNEKKO', query },
+        (response) => resolve(response)
+      );
+    });
+
+    console.log({response});
+
+    if (!response?.success) {
+      console.error('Kitsunekko search error:', response?.error);
+      return [];
+    }
+
+    const results: SubtitleResult[] = [];
+
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(response.data, 'text/html');
+      const subtitleLinks = doc.querySelectorAll('a[href$=".srt"], a[href$=".ass"]');
+      
+      subtitleLinks.forEach(link => {
+        const href = link.getAttribute('href') || '';
+        const cleanHref = href.replace(/^\/+/, '').replace(/^subtitles\/japanese\//, '');
+        
+        const pathComponents = cleanHref.split('/').map(component => 
+          encodeURIComponent(component.trim())
+        );
+
+        const subtitleTitle = link.textContent?.trim() || cleanHref;
+        
+        results.push({
+          title: subtitleTitle,
+          language: 'ja',
+          url: `https://kitsunekko.net/subtitles/japanese/${pathComponents.join('/')}`,
+          source: 'kitsunekko',
+          confidence: 0
+        });
+      });
+    } catch (error) {
+      console.error('Error parsing Kitsunekko response:', error);
+    }
+
+    return results;
   }
 
   private static async searchDAddicts(query: string): Promise<SubtitleResult[]> {

@@ -1,12 +1,12 @@
-interface SubtitleLine {
-  start: number;  // Time in seconds
-  end: number;    // Time in seconds
+interface ParsedSubtitle {
+  start: number;
+  end: number;
   text: string;
 }
 
-export function parseAssSubtitles(content: string): SubtitleLine[] {
+export function parseAssSubtitles(content: string): ParsedSubtitle[] {
   const lines = content.split('\n');
-  const subtitles: SubtitleLine[] = [];
+  const subtitles: ParsedSubtitle[] = [];
   let isEvents = false;
 
   for (const line of lines) {
@@ -52,8 +52,42 @@ function parseTimestamp(timestamp: string): number {
   return hours * 3600 + minutes * 60 + seconds;
 }
 
-export function findCurrentSubtitles(subtitles: SubtitleLine[], currentTime: number): string {
+function parseSrtTimestamp(timestamp: string): number {
+  const [time, milliseconds] = timestamp.split(',');
+  const [hours, minutes, seconds] = time.split(':').map(Number);
+  return hours * 3600 + minutes * 60 + seconds + Number(milliseconds) / 1000;
+}
+
+export function parseSrtSubtitles(content: string): ParsedSubtitle[] {
+  const subtitles: ParsedSubtitle[] = [];
+  const blocks = content.trim().split(/\n\s*\n/);
+
+  for (const block of blocks) {
+    const lines = block.trim().split('\n');
+    if (lines.length < 3) continue;  // Skip invalid blocks
+
+    // Skip the subtitle number (first line)
+    const timeLine = lines[1];
+    const text = lines.slice(2).join('\n').trim();
+
+    // Parse time line "00:00:20,000 --> 00:00:24,400"
+    const [startTime, endTime] = timeLine.split('-->').map(t => parseSrtTimestamp(t.trim()));
+
+    if (isNaN(startTime) || isNaN(endTime)) continue;  // Skip invalid timestamps
+
+    subtitles.push({
+      start: startTime,
+      end: endTime,
+      text
+    });
+  }
+
+  return subtitles;
+}
+
+export function findCurrentSubtitles(subtitles: ParsedSubtitle[], currentTime: number): string {
   return subtitles
     .filter(sub => currentTime >= sub.start && currentTime <= sub.end)
-    .map(sub => sub.text)[0];
+    .map(sub => sub.text)
+    .join('\n');
 }

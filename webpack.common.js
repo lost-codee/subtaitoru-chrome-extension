@@ -1,3 +1,7 @@
+const {
+  CleanWebpackPlugin
+} = require("clean-webpack-plugin");
+
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
@@ -14,6 +18,7 @@ module.exports = {
     quiz: "./src/app/content/quiz.tsx",
     hover_translation: "./src/app/content/hover_translation.tsx",
   },
+
   module: {
     rules: [
       {
@@ -49,18 +54,23 @@ module.exports = {
       },
     ],
   },
+
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
   },
+
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     clean: true,
   },
-  plugins: [
-    new CopyPlugin({
-      patterns: copyPatterns,
-    }),
-    new Dotenv(),
-  ],
+
+  plugins: [new CopyPlugin({
+    patterns: copyPatterns,
+  }), new Dotenv({
+    systemvars: true, // Load all system variables
+    defaults: false   // Don't load .env.defaults
+  }), new CleanWebpackPlugin()],
+ 
+  devtool: "source-map"
 };

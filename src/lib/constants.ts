@@ -15,6 +15,9 @@ export const DEFAULT_FONT_SIZE = "24px";
 
 export const JAPANESE_SAVED_WORDS = "words-jp";
 
+// Replace this with your actual Google Form URL
+export const BUG_REPORT_FORM_URL = "https://forms.gle/your-form-url";
+
 // Common English words categorized by difficulty
 export const COMMON_ENGLISH_WORDS = {
   BASIC: [

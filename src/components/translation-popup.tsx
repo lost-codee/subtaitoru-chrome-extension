@@ -1,7 +1,8 @@
 import React, { useState, useCallback, memo, useEffect } from "react";
 import { TranslationPopupProps } from "../types";
 import { SavedWordsService } from "../services/saved-words";
-import { ErrorBoundary } from "./error-boundary";
+
+
 
 const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
   word,
@@ -175,7 +176,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
 const MemoizedTranslationPopupContent = memo(TranslationPopupContent);
 
 export const TranslationPopup: React.FC<TranslationPopupProps> = (props) => (
-  <ErrorBoundary>
+ 
     <MemoizedTranslationPopupContent {...props} />
-  </ErrorBoundary>
+ 
 );

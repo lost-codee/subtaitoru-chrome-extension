@@ -3,19 +3,22 @@ import { createRoot } from "react-dom/client";
 
 // Components
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
-import { Loading, LoadingIndicator } from "../../components/ui/loading";
+import {  LoadingIndicator } from "../../components/ui/loading";
 import { VideoControls } from "../../components/video-controls";
 import { SettingsProvider } from "../../context/settings-context";
 import { SubtitlesList } from "../../components/subtitles-list";
+import { ErrorMessage } from "../../components/ui/error-message";
+import { ErrorBoundary } from "../../components/error-boundary";
 
 // Utils
 import { createShadowContainer } from "../../utils/create-shadow-container";
 import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
 import { findCurrentCaption } from "../../utils/find-current-caption";
+import { initializeErrorHandling } from "../../utils/error-handler";
 
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
-import { ErrorMessage } from "../../components/ui/error-message";
+;
 
 interface YoutubeCaptions {
   start: number;
@@ -34,7 +37,6 @@ const YoutubeSubtitles = React.memo(
     const [captions, setCaptions] = useState<YoutubeCaptionsTokenize[]>([]);
     const [subtitles, setSubtitles] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
 
     // Helper to fetch YouTube metadata and captions
@@ -143,7 +145,7 @@ const YoutubeSubtitles = React.memo(
 
         setCaptions(tokenizeCaptions);
       } catch (error) {
-        setError(
+        console.error(
           "Error fetching captions: " +
             (error instanceof Error ? error.message : "Unknown error")
         );
@@ -226,14 +228,6 @@ const YoutubeSubtitles = React.memo(
       );
     }
 
-    if (error) {
-      return (
-        <div className="flex flex-col items-center p-4 justify-end z-[999] absolute h-full w-full bottom-12">
-          <ErrorMessage error={error} />
-        </div>
-      );
-    }
-
     return (
       <>
         <VideoControls
@@ -247,6 +241,8 @@ const YoutubeSubtitles = React.memo(
 );
 
 const init = () => {
+  // Initialize global error handling
+  initializeErrorHandling();
   if (document.getElementById(SUBTAITORU_ROOT_ID)) {
     return;
   }
@@ -265,9 +261,13 @@ const init = () => {
 
   const root = createRoot(shadowRoot);
   root.render(
-    <SettingsProvider>
-      <YoutubeSubtitles videoElement={videoElement} />
-    </SettingsProvider>
+    <ErrorBoundary>
+      <React.StrictMode>
+        <SettingsProvider>
+          <YoutubeSubtitles videoElement={videoElement} />
+        </SettingsProvider>
+      </React.StrictMode>
+    </ErrorBoundary>
   );
 };
 

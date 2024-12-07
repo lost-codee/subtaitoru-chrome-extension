@@ -4,6 +4,7 @@ import './script-injection';
 // Initialize subtitle handling
 import './subtitle-handler';
 
+
 // Initialize environment variables in Chrome storage
 chrome.runtime.onInstalled.addListener(() => {
   if (!process.env.DEEPL_API_KEY) {

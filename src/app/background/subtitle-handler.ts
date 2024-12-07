@@ -108,10 +108,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "SEARCH_KITSUNEKKO") {
     (async () => {
       try {
+
+        console.log({url: `https://kitsunekko.net/dirlist.php?dir=${message.query}`})
+
         const response = await fetch(
-          `https://kitsunekko.net/dirlist.php?dir=subtitles%2Fjapanese%2F${encodeURIComponent(
-            message.query
-          )}`
+          `https://kitsunekko.net/dirlist.php?dir=${message.query}`
         );
 
         if (!response.ok) {
@@ -126,6 +127,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       } catch (error) {
         console.error("Error searching Kitsunekko:", error);
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === "FETCH_KITSUNEKKO_MAIN") {
+    (async () => {
+      try {
+        const response = await fetch("https://kitsunekko.net/dirlist.php?dir=subtitles%2Fjapanese%2F");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        sendResponse({
+          success: true,
+          data: text,
+        });
+      } catch (error) {
+        console.error("Error fetching Kitsunekko main page:", error);
         sendResponse({
           success: false,
           error: error instanceof Error ? error.message : "Unknown error",

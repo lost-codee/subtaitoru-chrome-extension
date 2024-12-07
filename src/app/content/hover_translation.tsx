@@ -3,6 +3,8 @@ import { TranslationPopup } from '../../components/translation-popup';
 import { createShadowContainer } from '../../utils/create-shadow-container';
 import { TranslationFetcher } from '../../services/translation-fetcher';
 import { tokenizeJapaneseText } from '../../utils/tokenize-japanese-text';
+import { ErrorBoundary } from '../../components/error-boundary';
+import { initializeErrorHandling } from '../../utils/error-handler';
 
 // State management
 let currentTranslationPopup: { root: any; container: HTMLElement } | null = null;
@@ -10,8 +12,9 @@ let isEnabled = true;
 let currentHoverElement: HTMLElement | null = null;
 let hoverStyleSheet: HTMLStyleElement | null = null;
 
+
 // Load settings
-chrome.storage.sync.get(['settings'], (result) => {
+chrome.storage.local.get(['settings'], (result) => {
   if (result.settings?.hoverTranslation) {
     isEnabled = result.settings.hoverTranslation.enabled;
   }
@@ -41,6 +44,17 @@ const initializeHoverStyles = () => {
       font-size: 12px;
       margin-left: 4px;
       opacity: 0.7;
+    }
+    .hover-translate-loading {
+      cursor: wait !important;
+    }
+    .hover-translate-loading::after {
+      content: '⌛';
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   `;
   document.head.appendChild(hoverStyleSheet);
@@ -128,30 +142,52 @@ const showTranslationPopup = async (word: string, x: number, y: number) => {
   container.appendChild(shadow.host);
   
   const root = createRoot(shadow);
-
+  
   try {
+    // Add loading state to the clicked element
+    if (currentHoverElement) {
+      currentHoverElement.classList.add('hover-translate-loading');
+    }
+
     const translation = await TranslationFetcher.fetchWordTranslation(word);
+    
+    // Remove loading state
+    if (currentHoverElement) {
+      currentHoverElement.classList.remove('hover-translate-loading');
+    }
+
     if (translation) {
       // Render translation popup
       root.render(
-        <TranslationPopup
-          word={translation}
-          isCached={false}
-          onClose={() => {
-            if (currentTranslationPopup) {
-              currentTranslationPopup.container.remove();
-              currentTranslationPopup = null;
-            }
-          }}
-        />
+        <ErrorBoundary>
+          <TranslationPopup
+            word={translation}
+            isCached={false}
+            onClose={() => {
+              if (currentTranslationPopup) {
+                currentTranslationPopup.container.remove();
+                currentTranslationPopup = null;
+              }
+            }}
+          />
+        </ErrorBoundary>
       );
 
-      // Store current popup
-      currentTranslationPopup = { root, container };
+      // Save current popup reference
+      currentTranslationPopup = {
+        root,
+        container,
+      };
+
+      // Add popup to document
       document.body.appendChild(container);
     }
   } catch (error) {
-    console.error('Failed to fetch translation:', error);
+    // Remove loading state on error
+    if (currentHoverElement) {
+      currentHoverElement.classList.remove('hover-translate-loading');
+    }
+    console.error('Error showing translation popup:', error);
   }
 };
 
@@ -204,33 +240,38 @@ const handleMouseLeave = (e: MouseEvent) => {
 };
 
 // Initialize hover translation
-const init = async () => {
-  // Initialize hover styles
-  initializeHoverStyles();
+const init = () => {
+  // Initialize error handling
+  initializeErrorHandling();
+  try {
+    initializeHoverStyles();
+    
+    // Add event listeners for hover and click
+    document.addEventListener('mouseover', handleTextHover);
+    document.addEventListener('click', handleTextClick);
+    document.addEventListener('mouseleave', handleMouseLeave, true);
 
-  // Process existing text nodes
-  processTextNodes(document.body);
+    // Initial processing of text nodes
+    processTextNodes(document.body);
 
-  // Create an observer to process new text nodes
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          processTextNodes(node);
-        }
+    // Create observer for dynamic content
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            processTextNodes(node);
+          }
+        });
       });
     });
-  });
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-
-  // Add event listeners
-  document.addEventListener('mousemove', handleTextHover);
-  document.addEventListener('click', handleTextClick);
-  document.addEventListener('mouseleave', handleMouseLeave, true);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  } catch (error) {
+    console.error('Error initializing hover translation:', error);
+  }
 };
 
 // Initialize when DOM is ready

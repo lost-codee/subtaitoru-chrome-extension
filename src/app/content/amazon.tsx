@@ -7,7 +7,7 @@ import { LoadingIndicator } from "../../components/ui/loading";
 import { VideoControls } from "../../components/video-controls";
 import { SettingsProvider } from "../../context/settings-context";
 import { ToastManager } from "../../components/ui/toast";
-import { ErrorMessage } from "../../components/ui/error-message";
+import { ErrorBoundary } from "../../components/error-boundary";
 
 // Utils
 import { createShadowContainer } from "../../utils/create-shadow-container";
@@ -15,11 +15,14 @@ import { tokenizeJapaneseText } from "../../utils/tokenize-japanese-text";
 import { SubtitleFetcher } from "../../services/subtitle-fetcher";
 import {
   parseAssSubtitles,
+  parseSrtSubtitles,
   findCurrentSubtitles,
 } from "../../utils/subtitle-parser";
+import { initializeErrorHandling } from "../../utils/error-handler";
 
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
+
 
 const getEpisodeInfo = () => {
   const subtitleText = document.querySelector(
@@ -85,7 +88,6 @@ const AmazonPrimeSubtitles = memo(
     >([]);
     const [subtitles, setSubtitles] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0);
     const [currentEpisodeInfo, setCurrentEpisodeInfo] = useState<string | null>(
       null
@@ -93,7 +95,6 @@ const AmazonPrimeSubtitles = memo(
 
     const fetchSubtitles = async () => {
       setIsLoading(true);
-      setError(null);
       try {
         const titleElement = document.querySelector(
           '[data-automation-id="title"]'
@@ -139,6 +140,8 @@ const AmazonPrimeSubtitles = memo(
           searchParams
         );
 
+        console.log({ subtitleResults });
+
         if (!subtitleResults || subtitleResults.length === 0) {
           throw new Error("No Japanese subtitles found for this title");
         }
@@ -151,14 +154,16 @@ const AmazonPrimeSubtitles = memo(
           throw new Error("Failed to download subtitles");
         }
 
-        // Parse the downloaded subtitles
-        const parsed = parseAssSubtitles(subtitleContent);
+        console.log({ subtitleContent });
+
+        // Parse the downloaded subtitles based on file extension
+        const isAss = subtitleResults[0].url.toLowerCase().endsWith('.ass');
+        const parsed = isAss ? 
+          parseAssSubtitles(subtitleContent) : 
+          parseSrtSubtitles(subtitleContent);
+
         setParsedSubtitles(parsed);
       } catch (error) {
-        setError(
-          "Error fetching captions: " +
-            (error instanceof Error ? error.message : "Unknown error")
-        );
         console.error("Error fetching subtitles:", error);
       } finally {
         setIsLoading(false);
@@ -233,16 +238,6 @@ const AmazonPrimeSubtitles = memo(
       );
     }
 
-    if (error) {
-      return (
-        <div className="flex flex-col items-center p-4 justify-end z-[999] absolute w-full h-full bottom-12 pointer-events-none">
-          <ErrorMessage 
-            error={error} 
-            onClose={() => setError(null)}
-          />
-        </div>
-      );
-    }
 
     return (
       <>
@@ -261,6 +256,9 @@ const init = () => {
     return;
   }
   
+  // Initialize global error handling
+  initializeErrorHandling();
+
   // Show experimental feature toast
   ToastManager.show({
     message: "Amazon Prime support is experimental and may not work as expected.",
@@ -281,11 +279,13 @@ const init = () => {
 
   const root = createRoot(shadowRoot);
   root.render(
-    <React.StrictMode>
-      <SettingsProvider>
-        <AmazonPrimeSubtitles videoElement={videoElements[0]} />
-      </SettingsProvider>
-    </React.StrictMode>
+    <ErrorBoundary>
+      <React.StrictMode>
+        <SettingsProvider>
+          <AmazonPrimeSubtitles videoElement={videoElements[0]} />
+        </SettingsProvider>
+      </React.StrictMode>
+    </ErrorBoundary>
   );
 };
 

@@ -7,7 +7,6 @@ interface SubtitleSettings {
   showSubtitlesList: boolean;
   hoverTranslation: {
     enabled: boolean;
-    showReadingGuide: boolean;
   };
 }
 
@@ -23,7 +22,6 @@ const defaultSettings: SubtitleSettings = {
   showSubtitlesList: true,
   hoverTranslation: {
     enabled: true,
-    showReadingGuide: true,
   },
 };
 

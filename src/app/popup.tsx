@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SettingsProvider, useSettings } from "../context/settings-context";
 
 // Utils
 import { cn } from "../utils/cn";
+import { initializeErrorHandling } from "../utils/error-handler";
 
 // Styles
 import "../styles/global.css";
+
+// Constants
+import { BUG_REPORT_FORM_URL } from "../lib/constants";
+
 
 const Popup = () => {
   const { settings, updateSettings } = useSettings();
@@ -38,8 +43,6 @@ const Popup = () => {
       },
     });
   };
-
-
 
   return (
     <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
@@ -89,13 +92,13 @@ const Popup = () => {
             </button>
           </div>
         </section>
-               {/* Hover Translation Settings */}
-               <section aria-labelledby="hover-translation-title" className="mb-6">
+        {/* Hover Translation Settings */}
+        <section aria-labelledby="hover-translation-title" className="mb-6">
           <h2
             id="hover-translation-title"
             className="text-lg font-semibold mb-4 text-gray-900"
           >
-           Settings
+            Settings
           </h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -134,9 +137,20 @@ const Popup = () => {
           Privacy Policy
         </a>
       </footer>
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <button
+          onClick={() => window.open(BUG_REPORT_FORM_URL, '_blank')}
+          className="text-sm text-gray-600 hover:text-gray-900"
+        >
+          Report a Bug
+        </button>
+      </div>
     </div>
   );
 };
+
+// Initialize global error handling
+initializeErrorHandling();
 
 const container = document.getElementById("root");
 
@@ -149,7 +163,7 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <SettingsProvider>
-         <Popup />
+      <Popup />
     </SettingsProvider>
   </React.StrictMode>
 );
