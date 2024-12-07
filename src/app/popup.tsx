@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { SettingsProvider, useSettings } from "../context/settings-context";
 
 // Utils
 import { cn } from "../utils/cn";
@@ -8,6 +9,11 @@ import { cn } from "../utils/cn";
 import "../styles/global.css";
 
 const Popup = () => {
+  const { settings, updateSettings } = useSettings();
+
+  // Default values if settings are not yet loaded
+  const isHoverEnabled = settings?.hoverTranslation?.enabled ?? true;
+
   const handleQuizClick = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
@@ -23,6 +29,17 @@ const Popup = () => {
   const handleManageLearnings = () => {
     chrome.tabs.create({ url: "profile.html" });
   };
+
+  const toggleHoverTranslation = () => {
+    updateSettings({
+      hoverTranslation: {
+        ...settings?.hoverTranslation,
+        enabled: !isHoverEnabled,
+      },
+    });
+  };
+
+
 
   return (
     <div className="w-80 bg-purple-50 p-4 font-sans text-gray-800 max-h-[400px] overflow-auto">
@@ -72,6 +89,34 @@ const Popup = () => {
             </button>
           </div>
         </section>
+               {/* Hover Translation Settings */}
+               <section aria-labelledby="hover-translation-title" className="mb-6">
+          <h2
+            id="hover-translation-title"
+            className="text-lg font-semibold mb-4 text-gray-900"
+          >
+           Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm text-gray-700">Enable Hover Translation</label>
+              <button
+                onClick={toggleHoverTranslation}
+                className={cn(
+                  "w-11 h-6 rounded-full relative transition-colors",
+                  isHoverEnabled ? "bg-indigo-600" : "bg-gray-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute w-4 h-4 bg-white rounded-full transition-transform top-1",
+                    isHoverEnabled ? "left-6" : "left-1"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
       <footer className="flex justify-between text-sm text-gray-600">
         <a
@@ -103,6 +148,8 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <Popup />
+    <SettingsProvider>
+         <Popup />
+    </SettingsProvider>
   </React.StrictMode>
 );

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, memo, useEffect } from "react";
 import { TranslationPopupProps } from "../types";
-import { LocalStorageService } from "../services/local-storage";
+import { SavedWordsService } from "../services/saved-words";
 import { ErrorBoundary } from "./error-boundary";
 
 const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
@@ -10,7 +10,7 @@ const TranslationPopupContent: React.FC<TranslationPopupProps> = ({
 }) => {
   const [isSaved, setSaved] = useState(isCached);
   const [error, setError] = useState<string | null>(null);
-  const storageService = LocalStorageService.getInstance();
+  const storageService = SavedWordsService.getInstance();
 
   const jishoUrl = `https://jisho.org/search/${encodeURIComponent(word.word)}`;
 

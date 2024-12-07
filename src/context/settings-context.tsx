@@ -4,6 +4,11 @@ interface SubtitleSettings {
   fontSize: number;
   fontColor: string;
   showSubtitles: boolean;
+  showSubtitlesList: boolean;
+  hoverTranslation: {
+    enabled: boolean;
+    showReadingGuide: boolean;
+  };
 }
 
 interface SettingsContextType {
@@ -14,7 +19,12 @@ interface SettingsContextType {
 const defaultSettings: SubtitleSettings = {
   fontSize: 16,
   fontColor: "#383838",
-  showSubtitles: false,
+  showSubtitles: true,
+  showSubtitlesList: true,
+  hoverTranslation: {
+    enabled: true,
+    showReadingGuide: true,
+  },
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

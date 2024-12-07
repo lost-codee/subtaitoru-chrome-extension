@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { TranslationFetcher } from "../services/translation-fetcher";
-import { LocalStorageService } from "../services/local-storage";
+import { SavedWordsService } from "../services/saved-words";
 
 // Components
 import { Loading } from "./ui/loading";
@@ -84,7 +84,7 @@ export const QuizPopup: React.FC<QuizPopupProps> = ({ onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [wrongAnswerPool, setWrongAnswerPool] = useState<string[]>([]);
   const [quizData, setQuizData] = useState<QuizData[]>([]);
-  const storageService = LocalStorageService.getInstance();
+  const storageService = SavedWordsService.getInstance();
 
   const handleAnswerClick = useCallback(
     (answer: string) => {

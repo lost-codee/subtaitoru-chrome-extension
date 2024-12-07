@@ -19,7 +19,8 @@
     "*://*.netflix.com/*",
     "*://*.kitsunekko.net/*",
     "*://*.d-addicts.com/*",
-    "*://*.deepl.com/*"
+    "*://*.deepl.com/*",
+    "*://*/*"
   ],
   "action": {
     "default_icon": "icon.png",
@@ -38,23 +39,24 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/watch?*"],
-      "js": ["youtube.js"],
-      "run_at": "document_idle"
-    },
-    {
       "matches": [
-        "*://*.amazon.com/*/video/detail*",
-        "*://*.amazon.co.jp/*/video/detail*",
-        "*://*.amazon.co.uk/*/video/detail*",
-        "*://*.amazon.de/*/video/detail*"
+        "<all_urls>"
       ],
-      "js": ["amazon.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["<all_urls>"],
-      "js": ["general_translation.js"],
+      "exclude_matches": [
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.com/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.fr/*",
+        "*://*.amazon.it/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.ca/*",
+        "*://*.amazon.cn/*",
+        "*://*.amazon.in/*",
+        "*://*.amazon.co.jp/*",
+        "*://*.youtube.com/*",
+        "*://*.netflix.com/*"
+      ],
+      "js": ["hover_translation.js"],
       "run_at": "document_end"
     }
   ],

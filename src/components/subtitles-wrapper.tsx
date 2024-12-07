@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Subtitles } from "./subtitles";
-import { Loading } from "./ui/loading";
+import { Loading, LoadingIndicator } from "./ui/loading";
 import { TranslationPopup } from "./translation-popup";
 import { useSubtitles } from "../hooks/use-subtitles";
 import { useSettings } from "../context/settings-context";
@@ -11,14 +11,7 @@ interface SubtitlesWrapperProps {
   videoElement: HTMLVideoElement;
 }
 
-const LoadingIndicator: React.FC = () => (
-  <div className="bg-white text-black p-[8px] rounded-md text-center mb-[8px] animate-[fadeIn]">
-    <div className="flex items-center justify-center text-[14px]">
-      <span>Fetching translation</span>
-      <Loading />
-    </div>
-  </div>
-);
+
 
 /**
  * A component that renders an interactive subtitle overlay on top of a video element.
@@ -108,7 +101,7 @@ export const SubtitlesWrapper: React.FC<SubtitlesWrapperProps> = ({
           isCached={popupState.isCached}
         />
       )}
-      {popupState.isFetching && <LoadingIndicator />}
+      {popupState.isFetching && <LoadingIndicator message="Loading Translation" />}
       <Subtitles
         subtitles={subtitles}
         dualSubtitles={dualSubtitles}

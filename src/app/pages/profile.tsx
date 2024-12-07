@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 
-import { LocalStorageService } from "../../services/local-storage";
+// Services
+import { SavedWordsService } from "../../services/saved-words";
 
 // Models
 import { SavedWords } from "../../types";
@@ -12,20 +13,20 @@ import "../../styles/global.css";
 const ProfilePage: React.FC = () => {
   const [learnedWords, setLearnedWords] = useState<SavedWords[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const localStorageService = LocalStorageService.getInstance();
+  const savedWordsService = SavedWordsService.getInstance();
 
   useEffect(() => {
-    localStorageService.getAllWords().then((words) => {
+    savedWordsService.getAllWords().then((words) => {
       console.log({ words });
       setLearnedWords(words);
     });
   }, []);
 
   const handleRemoveWord = (wordToRemove: string) =>
-    localStorageService.removeWord(wordToRemove);
+    savedWordsService.removeWord(wordToRemove);
 
   const handleRemoveAll = () => {
-    localStorageService.deleteAllWords();
+    savedWordsService.deleteAllWords();
     setLearnedWords([]);
   };
 
@@ -145,11 +146,14 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-ReactDOM.render(
-  <React.StrictMode>
-    <ProfilePage />
-  </React.StrictMode>,
-  document.getElementById("root")
-);
+const container = document.getElementById('root');
+if (container) {
+  const root = createRoot(container);
+  root.render(
+    <React.StrictMode>
+      <ProfilePage />
+    </React.StrictMode>
+  );
+}
 
 export default ProfilePage;

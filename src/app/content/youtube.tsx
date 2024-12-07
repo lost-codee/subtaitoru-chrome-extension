@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 // Components
 import { SubtitlesWrapper } from "../../components/subtitles-wrapper";
-import { Loading } from "../../components/ui/loading";
+import { Loading, LoadingIndicator } from "../../components/ui/loading";
 import { VideoControls } from "../../components/video-controls";
 import { SettingsProvider } from "../../context/settings-context";
 import { SubtitlesList } from "../../components/subtitles-list";
@@ -15,6 +15,7 @@ import { findCurrentCaption } from "../../utils/find-current-caption";
 
 // Constants
 import { SUBTAITORU_ROOT_ID } from "../../lib/constants";
+import { ErrorMessage } from "../../components/ui/error-message";
 
 interface YoutubeCaptions {
   start: number;
@@ -202,7 +203,9 @@ const YoutubeSubtitles = React.memo(
 
         root.render(
           <React.StrictMode>
-            <SubtitlesList captions={captions} videoElement={videoElement} />
+            <SettingsProvider>
+              <SubtitlesList captions={captions} videoElement={videoElement} />
+            </SettingsProvider>
           </React.StrictMode>
         );
       }
@@ -218,12 +221,7 @@ const YoutubeSubtitles = React.memo(
     if (isLoading) {
       return (
         <div className="flex flex-col items-center p-4 justify-end z-[999] absolute h-full w-full bottom-12">
-          <div className="bg-white text-black p-[8px] rounded-md text-center mb-[8px] animate-[fadeIn]">
-            <div className="flex items-center justify-center text-[14px]">
-              <span>Fetching Captions</span>
-              <Loading />
-            </div>
-          </div>
+         <LoadingIndicator message="Loading Captions" />
         </div>
       );
     }
@@ -231,11 +229,7 @@ const YoutubeSubtitles = React.memo(
     if (error) {
       return (
         <div className="flex flex-col items-center p-4 justify-end z-[999] absolute h-full w-full bottom-12">
-          <div className="bg-white text-black p-[8px] rounded-md text-center mb-[8px] animate-[fadeIn]">
-            <div className="flex items-center justify-center text-[14px]">
-              <span>{error}</span>
-            </div>
-          </div>
+          <ErrorMessage error={error} />
         </div>
       );
     }

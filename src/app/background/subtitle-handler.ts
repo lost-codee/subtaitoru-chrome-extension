@@ -5,8 +5,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       try {
         // Get API key from storage
         chrome.storage.local.get(["deeplApiKey"], async (result) => {
-          const apiKey =
-            result.deeplApiKey || "b32ece32-cd2a-40a5-a372-c9c0bfbe465e:fx"; // Fallback to default key
+          const apiKey = result.deeplApiKey;
+          if (!apiKey) {
+            throw new Error("DeepL API key not found in storage");
+          }
 
           try {
             const response = await fetch(
@@ -111,11 +113,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             message.query
           )}`
         );
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const text = await response.text();
+
         sendResponse({
           success: true,
           data: text,

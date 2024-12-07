@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '../utils/cn';
 import { useSettings } from '../context/settings-context';
 
@@ -17,31 +17,33 @@ export const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
   const [activeTab, setActiveTab] = useState<SettingsTab>('timing');
   const { settings, updateSettings } = useSettings();
 
-  const handleOffsetChange = (seconds: number) => {
+  const handleOffsetChange = useCallback((seconds: number) => {
     onOffsetChange(currentOffset + seconds);
-  };
+  }, [currentOffset, onOffsetChange]);
 
-  const handleFontSizeChange = (newSize: number) => {
+  const handleFontSizeChange = useCallback((newSize: number) => {
     updateSettings({ fontSize: newSize });
-  };
+  }, [updateSettings]);
 
-  const handleFontColorChange = (newColor: string) => {
+  const handleFontColorChange = useCallback((newColor: string) => {
     updateSettings({ fontColor: newColor });
-  };
+  }, [updateSettings]);
 
-  const TabButton: React.FC<{ tab: SettingsTab; label: string }> = ({ tab, label }) => (
-    <button
-      onClick={() => setActiveTab(tab)}
-      className={cn(
-        "px-[12px] py-[4px] text-[14px] rounded-md transition-colors",
-        activeTab === tab 
-          ? "bg-zinc-700 text-white" 
-          : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-      )}
-    >
-      {label}
-    </button>
-  );
+  const TabButton = useMemo(() => {
+    return ({ tab, label }: { tab: SettingsTab; label: string }) => (
+      <button
+        onClick={() => setActiveTab(tab)}
+        className={cn(
+          "px-[12px] py-[4px] text-[14px] rounded-md transition-colors",
+          activeTab === tab 
+            ? "bg-zinc-700 text-white" 
+            : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+        )}
+      >
+        {label}
+      </button>
+    );
+  }, [activeTab]);
 
   return (
     <div className="relative">
@@ -101,9 +103,24 @@ export const SubtitleSettings: React.FC<SubtitleSettingsProps> = ({
                   />
                 </button>
               </div>
-              <p className="text-[12px] text-zinc-500">
-                Toggle subtitles on/off for all supported video platforms
-              </p>
+
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] text-zinc-400">Show Subtitles List</span>
+                <button
+                  onClick={() => updateSettings({ showSubtitlesList: !settings.showSubtitlesList })}
+                  className={cn(
+                    "w-[40px] h-[24px] rounded-full relative transition-colors",
+                    settings.showSubtitlesList ? "bg-blue-500" : "bg-zinc-700"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform",
+                      settings.showSubtitlesList ? "left-[18px]" : "left-[2px]"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
           )}
 

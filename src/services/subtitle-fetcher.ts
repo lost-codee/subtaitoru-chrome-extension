@@ -94,8 +94,6 @@ export class SubtitleFetcher {
 
   static async searchSubtitles(params: SearchParams): Promise<SubtitleResult[]> {
     try {
-    
-
       const queries: string[] = [];
       
       if (params.rawTitle) {
@@ -103,6 +101,8 @@ export class SubtitleFetcher {
       }
 
       queries.push(params.title);
+
+     
 
       const englishTitle = await this.translateToEnglish(params.title);
       if (englishTitle !== params.title) {
@@ -119,6 +119,7 @@ export class SubtitleFetcher {
         queries.push(...episodeFormats);
       }
 
+      console.log({queries});
    
       let allResults: SubtitleResult[] = [];
 
@@ -138,10 +139,14 @@ export class SubtitleFetcher {
         })));
       }
 
+      console.log({allResults});
+
       const uniqueResults = Array.from(new Map(
         allResults.map(result => [result.url, result])
       ).values());
 
+
+      console.log({uniqueResults});
     
 
       return uniqueResults
