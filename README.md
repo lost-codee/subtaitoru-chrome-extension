@@ -7,20 +7,20 @@ Learn Japanese while watching your favorite movies, anime, or TV shows on stream
 
 ## Features
 
-### 1. Hover Translation
-Instantly translate Japanese text by hovering over it. Perfect for understanding subtitles or any Japanese text on the page.
-
-![Hover Translation](screenshots/hover-translation.png)
-*(Screenshot: Hover translation in action)*
-
-### 2. Subtitle Support
+### 1. Subtitle Support
 - **Multiple Platform Support**: Works with YouTube and Amazon Prime Video
 - **Automatic Subtitle Detection**: Automatically detects and processes Japanese subtitles
 - **Subtitle Timing Adjustment**: Fine-tune subtitle timing with offset controls
 - **Experimental Features**: Amazon Prime support (in beta)
 
-![Subtitle Support](screenshots/subtitle-support.png)
+![Subtitle Support](screenshots/subtitle-support.gif)
 *(Screenshot: Subtitle controls and settings)*
+
+### 2. Hover Translation
+Instantly translate Japanese text by hovering over it. Perfect for understanding subtitles or any Japanese text on the page.
+
+![Hover Translation](screenshots/hover-translation.gif)
+*(Screenshot: Hover translation in action)*
 
 ### 3. Interactive Learning
 - **Word Quiz**: Test your Japanese knowledge with quizzes generated from your watched content
