@@ -20,7 +20,6 @@ Learn Japanese while watching your favorite movies, anime, or TV shows on stream
 Instantly translate Japanese text by hovering over it. Perfect for understanding subtitles or any Japanese text on the page.
 
 ![Hover Translation](screenshots/hover-translation.gif)
-*(Screenshot: Hover translation in action)*
 
 ### 3. Interactive Learning
 - **Word Quiz**: Test your Japanese knowledge with quizzes generated from your watched content
@@ -28,7 +27,7 @@ Instantly translate Japanese text by hovering over it. Perfect for understanding
 - **Progress Tracking**: Keep track of your learning journey
 
 ![Quiz Feature](screenshots/quiz-feature.png)
-*(Screenshot: Quiz interface)*
+
 
 ### 4. User-Friendly Interface
 - **Clean, Modern Design**: Intuitive popup interface with purple theme
@@ -36,7 +35,7 @@ Instantly translate Japanese text by hovering over it. Perfect for understanding
 - **Error Handling**: Comprehensive error reporting with user-friendly messages
 
 ![Extension Popup](screenshots/popup-interface.png)
-*(Screenshot: Main extension popup)*
+
 
 ## Installation
 
@@ -102,6 +101,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Thanks to all contributors who have helped make this extension better
 - Special thanks to the Japanese learning community for feedback and suggestions
 
----
-
-*Note: Replace placeholder screenshots in the `screenshots` folder with actual screenshots of your features.*
