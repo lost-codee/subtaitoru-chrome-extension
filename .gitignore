@@ -5,4 +5,7 @@ tmp/
 yarn.lock
 .env
 dist.zip
-create_pr.py
+token.json
+credentials.json
+.venv/
+tools/

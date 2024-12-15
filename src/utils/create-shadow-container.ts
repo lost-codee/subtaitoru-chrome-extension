@@ -1,5 +1,5 @@
 // Styles
-import shadowStyles from "../generated-shadow-styles.css";
+import shadowStyles from "../styles/generated-shadow-styles.css";
 
 /**
  * Creates a container with Shadow DOM to isolate styles.

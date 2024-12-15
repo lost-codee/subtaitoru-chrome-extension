@@ -1,47 +1,39 @@
-import React, { Component, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { ToastManager } from './ui/toast';
 
-// Define the state type
-interface ErrorBoundaryState {
-  hasError: boolean;
-  errorMessage: string;
-}
-
-// Define the props type if needed (empty for now)
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
 }
 
-// Create the ErrorBoundary class component
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, errorMessage: "" };
+interface State {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(_: Error): State {
+    return { hasError: true };
   }
 
-  // Update state when an error is caught
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, errorMessage: error.message };
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Uncaught error:', error, errorInfo);
+    
+    // Show error toast
+    ToastManager.show({
+      message: 'An unexpected error occurred. Please try again later.',
+      type: 'error',
+      duration: 5000
+    });
   }
 
-  // Log error details (optional)
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error", error, errorInfo);
-  }
-
-  // Render a fallback UI if an error occurs
-  render() {
+  public render() {
     if (this.state.hasError) {
-      return (
-        <div className="bg-red-100 text-red-800 p-4 rounded-md">
-          <h2 className="font-bold text-lg">Something went wrong.</h2>
-          <p>{this.state.errorMessage}</p>
-        </div>
-      );
+      return null; // Return null since we're showing a toast instead
     }
 
-    // Otherwise, render the child components as normal
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
